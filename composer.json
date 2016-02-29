@@ -1,0 +1,9 @@
+{
+    "name": "smichaelsen/social-grabber",
+    "type": "typo3-cms-extension",
+    "autoload": {
+        "psr-4": {
+            "Smichaelsen\\SocialGrabber\\": "Classes/"
+        }
+    }
+}
