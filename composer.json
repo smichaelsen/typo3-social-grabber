@@ -1,6 +1,9 @@
 {
     "name": "smichaelsen/social-grabber",
     "type": "typo3-cms-extension",
+    "require": {
+        "fguillot/picofeed": "0.1.19"
+    },
     "autoload": {
         "psr-4": {
             "Smichaelsen\\SocialGrabber\\": "Classes/"
