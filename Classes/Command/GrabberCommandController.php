@@ -2,6 +2,7 @@
 namespace Smichaelsen\SocialGrabber\Command;
 
 use Smichaelsen\SocialGrabber\Grabber\GrabberInterface;
+use Smichaelsen\SocialGrabber\Grabber\HttpCachableGrabberInterface;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Extbase\Mvc\Controller\CommandController;
 
@@ -43,11 +44,15 @@ class GrabberCommandController extends CommandController
             }
             $lastPostDate = 1436736214; //todo: get last post date via join
 
+            if ($grabber instanceof HttpCachableGrabberInterface) {
+                /** @var HttpCachableGrabberInterface $grabber */
+                $grabber->setEtag($channel['feed_etag']);
+                $grabber->setLastModified($channel['feed_last_modified']);
+            }
+
             $data = $grabber->grabData(
                 $channel['url'],
-                \DateTime::createFromFormat('U', $lastPostDate),
-                $channel['feed_etag'],
-                empty($channel['feed_last_modified']) ? null : \DateTime::createFromFormat('U', $channel['feed_last_modified'])
+                \DateTime::createFromFormat('U', $lastPostDate)
             );
 
             // update channel
