@@ -1,7 +1,7 @@
 <?php
 namespace Smichaelsen\SocialGrabber\Grabber;
 
-interface GrabberInterface
+class TwitterGrabber extends AbstractGrabber
 {
 
     /**
@@ -11,6 +11,8 @@ interface GrabberInterface
      * @param \DateTimeInterface $feedLastUpdate
      * @return array
      */
-    public function grabData($url, \DateTimeInterface $lastPostDate, $feedEtag = null, \DateTimeInterface $feedLastUpdate = null);
+    public function grabData($url, \DateTimeInterface $lastPostDate, $feedEtag = null, \DateTimeInterface $feedLastUpdate = null)
+    {
 
+    }
 }
