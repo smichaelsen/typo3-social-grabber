@@ -30,6 +30,7 @@ return [
                 ]
             ],
         ],
+        'teaser' => [],
         'title' => [
             'label' => $lll . '.title',
             'config' => [
