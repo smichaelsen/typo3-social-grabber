@@ -3,6 +3,7 @@ namespace Smichaelsen\SocialGrabber\Grabber;
 
 use PicoFeed\Parser\Item;
 use PicoFeed\Reader\Reader;
+use PicoFeed\Reader\UnsupportedFeedFormatException;
 
 /**
  * You can use this grabber directly if you have only one rss source to grab.
@@ -26,12 +27,16 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
      * @param \DateTimeInterface $lastUpdate
      * @return array
      * @throws \PicoFeed\Parser\MalformedXmlException
-     * @throws \PicoFeed\Reader\UnsupportedFeedFormatException
      */
     public function grabData($url, \DateTimeInterface $lastUpdate)
     {
         $reader = new Reader();
-        $resource = $reader->download($url, $this->lastModified, $this->etag);
+        try {
+            $resource = $reader->download($url, $this->lastModified, $this->etag);
+        } catch (UnsupportedFeedFormatException $e) {
+            // Picofeed doesn't handle 304 (Not Modified) answers correctly and throws this exception when the feed hasn't changed
+            return [];
+        }
 
         $feed = $reader->getParser(
             $resource->getUrl(),

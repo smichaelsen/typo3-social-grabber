@@ -28,7 +28,11 @@ class GrabberCommandController extends CommandController
     public function grabCommand()
     {
         $this->initialize();
-        $channels = $this->getDatabaseConnection()->exec_SELECTgetRows('uid, pid, grabber_class, url, feed_etag, feed_last_modified', 'tx_socialgrabber_channel', 'deleted = 0 AND hidden = 0');
+        $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
+            'channel.uid, channel.pid, channel.grabber_class, channel.url, channel.feed_etag, channel.feed_last_modified, MAX(post.publication_date) as last_post_date',
+            'tx_socialgrabber_channel channel JOIN tx_socialgrabber_domain_model_post post ON (post.channel = channel.uid) ',
+            'channel.deleted = 0 AND channel.hidden = 0'
+        );
         $error = $this->getDatabaseConnection()->sql_error();
         if ($error) {
             throw new \Exception('Couldn\'t load channels: ' . $error);
@@ -42,7 +46,6 @@ class GrabberCommandController extends CommandController
             if (!$grabber instanceof GrabberInterface) {
                 throw new \Exception('Grabber class "' . $channel['grabber_class'] . '" doesn\'t implement the GrabberInterface.', 1456736051);
             }
-            $lastPostDate = 1436736214; //todo: get last post date via join
 
             if ($grabber instanceof HttpCachableGrabberInterface) {
                 /** @var HttpCachableGrabberInterface $grabber */
@@ -52,7 +55,7 @@ class GrabberCommandController extends CommandController
 
             $data = $grabber->grabData(
                 $channel['url'],
-                \DateTime::createFromFormat('U', $lastPostDate)
+                \DateTime::createFromFormat('U', $channel['last_post_date'])
             );
 
             // update channel
@@ -70,7 +73,7 @@ class GrabberCommandController extends CommandController
                 $inserts[] = $post;
             }
             if (count($inserts)) {
-                $this->getDatabaseConnection()->exec_INSERTmultipleRows('tx_socialgrabber_post', array_keys($inserts[0]), $inserts);
+                $this->getDatabaseConnection()->exec_INSERTmultipleRows('tx_socialgrabber_domain_model_post', array_keys($inserts[0]), $inserts);
             }
         }
     }
