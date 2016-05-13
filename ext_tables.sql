@@ -15,7 +15,7 @@ CREATE TABLE tx_socialgrabber_channel (
     PRIMARY KEY (uid)
 );
 
-CREATE TABLE tx_socialgrabber_post (
+CREATE TABLE tx_socialgrabber_domain_model_post (
     uid int(11) NOT NULL auto_increment,
     pid int(11) NOT NULL default '0',
     channel int(11) default NULL,
@@ -26,6 +26,7 @@ CREATE TABLE tx_socialgrabber_post (
     teaser varchar(2323) default NULL,
     author varchar(255) default NULL,
     author_url varchar(2083) default NULL,
+    deleted tinyint(4) DEFAULT '0' NOT NULL,
     PRIMARY KEY (uid),
     UNIQUE KEY post_identifier (post_identifier),
     KEY channel (channel)
