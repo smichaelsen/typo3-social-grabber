@@ -6,9 +6,9 @@ interface GrabberInterface
 
     /**
      * @param string $url
-     * @param \DateTimeInterface $lastPostDate
+     * @param \DateTimeInterface|null $lastPostDate
      * @return array
      */
-    public function grabData($url, \DateTimeInterface $lastPostDate);
+    public function grabData($url, $lastPostDate);
 
 }

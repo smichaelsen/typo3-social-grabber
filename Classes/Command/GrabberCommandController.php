@@ -30,7 +30,7 @@ class GrabberCommandController extends CommandController
         $this->initialize();
         $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
             'channel.uid, channel.pid, channel.grabber_class, channel.url, channel.feed_etag, channel.feed_last_modified, MAX(post.publication_date) as last_post_date',
-            'tx_socialgrabber_channel channel JOIN tx_socialgrabber_domain_model_post post ON (post.channel = channel.uid) ',
+            'tx_socialgrabber_channel channel LEFT JOIN tx_socialgrabber_domain_model_post post ON (post.channel = channel.uid) ',
             'channel.deleted = 0 AND channel.hidden = 0'
         );
         $error = $this->getDatabaseConnection()->sql_error();
@@ -55,7 +55,7 @@ class GrabberCommandController extends CommandController
 
             $data = $grabber->grabData(
                 $channel['url'],
-                \DateTime::createFromFormat('U', $channel['last_post_date'])
+                empty($channel['last_post_date']) ? null : \DateTime::createFromFormat('U', $channel['last_post_date'])
             );
 
             // update channel
@@ -74,6 +74,10 @@ class GrabberCommandController extends CommandController
             }
             if (count($inserts)) {
                 $this->getDatabaseConnection()->exec_INSERTmultipleRows('tx_socialgrabber_domain_model_post', array_keys($inserts[0]), $inserts);
+                $error = $this->getDatabaseConnection()->sql_error();
+                if ($error) {
+                    throw new \Exception('Error while inserting new posts: ' . $error, 1467270735);
+                }
             }
         }
     }

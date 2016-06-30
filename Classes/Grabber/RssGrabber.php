@@ -24,11 +24,11 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
 
     /**
      * @param string $url
-     * @param \DateTimeInterface $lastUpdate
+     * @param \DateTimeInterface|null $lastUpdate
      * @return array
      * @throws \PicoFeed\Parser\MalformedXmlException
      */
-    public function grabData($url, \DateTimeInterface $lastUpdate)
+    public function grabData($url, $lastUpdate)
     {
         $reader = new Reader();
         try {
@@ -52,10 +52,10 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
 
         foreach($feed->getItems() as $item) {
             /** @var Item $item */
-            if ($item->getDate() <= $lastUpdate) {
+            if ($lastUpdate instanceof \DateTimeInterface && $item->getDate() <= $lastUpdate) {
                 continue;
             }
-            $data['posts'][] = [
+            $data['posts'][$item->id] = [
                 'post_identifier' => $item->id,
                 'publication_date' => $item->getDate()->format('U'),
                 'url' => $item->getUrl(),
