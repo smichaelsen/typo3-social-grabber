@@ -2,7 +2,7 @@
     "name": "smichaelsen/social-grabber",
     "type": "typo3-cms-extension",
     "require": {
-        "fguillot/picofeed": "0.1.19",
+        "fguillot/picofeed": "0.1.25",
         "j7mbo/twitter-api-php": "1.0.5"
     },
     "autoload": {
