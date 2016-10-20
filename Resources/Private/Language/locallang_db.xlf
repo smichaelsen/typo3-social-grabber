@@ -17,6 +17,12 @@
 			<trans-unit id="tx_socialgrabber_channel.url">
 				<source>URL</source>
 			</trans-unit>
+            <trans-unit id="tx_socialgrabber_domain_model_post">
+                <source>Post</source>
+            </trans-unit>
+            <trans-unit id="tx_socialgrabber_domain_model_post.title">
+                <source>Title</source>
+            </trans-unit>
 		</body>
 	</file>
 </xliff>
