@@ -3,8 +3,6 @@ if (!defined('TYPO3_MODE')) {
     die ('Access denied.');
 }
 
-$extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['tripshop']);
-
 $lll = 'LLL:EXT:social_grabber/Resources/Private/Language/locallang_db.xlf:tx_socialgrabber_channel';
 
 return [
@@ -30,6 +28,7 @@ return [
                 'renderType' => 'selectSingle',
                 'items' => [
                     ['RSS', \Smichaelsen\SocialGrabber\Grabber\RssGrabber::class],
+                    ['Twitter', \Smichaelsen\SocialGrabber\Grabber\TwitterGrabber::class],
                 ]
             ],
         ],

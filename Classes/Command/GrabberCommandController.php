@@ -27,11 +27,13 @@ class GrabberCommandController extends CommandController
      */
     public function grabCommand()
     {
+        xdebug_break();
         $this->initialize();
         $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
             'channel.uid, channel.pid, channel.grabber_class, channel.url, channel.feed_etag, channel.feed_last_modified, MAX(post.publication_date) as last_post_date',
             'tx_socialgrabber_channel channel LEFT JOIN tx_socialgrabber_domain_model_post post ON (post.channel = channel.uid) ',
-            'channel.deleted = 0 AND channel.hidden = 0'
+            'channel.deleted = 0 AND channel.hidden = 0',
+            'channel.uid'
         );
         $error = $this->getDatabaseConnection()->sql_error();
         if ($error) {

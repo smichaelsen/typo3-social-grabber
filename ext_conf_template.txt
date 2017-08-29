@@ -1,5 +1,8 @@
 # cat=basic/file/1; type=string; label=Twitter API Key:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
-twitter_api_key =
-
+oauth_access_token =
 # cat=basic/file/1; type=string; label=Twitter API Secret:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
-twitter_api_secret =
+oauth_access_token_secret =
+# cat=basic/file/1; type=string; label=Twitter API Secret:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
+consumer_key =
+# cat=basic/file/1; type=string; label=Twitter API Secret:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
+consumer_secret =
