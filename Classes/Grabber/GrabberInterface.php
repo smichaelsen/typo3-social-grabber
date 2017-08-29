@@ -5,10 +5,9 @@ interface GrabberInterface
 {
 
     /**
-     * @param string $url
-     * @param \DateTimeInterface|null $lastPostDate
+     * @param array $channel
      * @return array
      */
-    public function grabData($url, $lastPostDate);
+    public function grabData($channel);
 
 }
