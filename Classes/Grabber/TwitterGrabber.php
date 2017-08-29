@@ -1,6 +1,9 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Grabber;
 
+use Abraham\TwitterOAuth\TwitterOAuth;
+use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -22,35 +25,54 @@ class TwitterGrabber implements GrabberInterface
     }
 
     /**
-     * @param string $screenName
-     * @param \DateTimeInterface|null $lastPostDate
-     * @param string $feedEtag
-     * @param \DateTimeInterface $feedLastUpdate
+     * @param array $channel
      * @return array
      */
-    public function grabData($screenName, $lastPostDate, $feedEtag = null, \DateTimeInterface $feedLastUpdate = null)
+    public function grabData($channel)
     {
         $this->initialize();
-        $url = 'https://api.twitter.com/1.1/statuses/user_timeline.json';
-        $getfield = '?screen_name=' . $screenName;
-        $requestMethod = 'GET';
-        $twitter = new \TwitterAPIExchange($this->extensionConfiguration);
-        echo '<br><br><br><br><br><br>';
-        var_dump($this->extensionConfiguration);die();
-        $response = json_decode(
-            $twitter->buildOauth($url, $requestMethod)->setGetfield($getfield)->performRequest(),
-        true
+        $connection = new TwitterOAuth(
+            $this->extensionConfiguration['consumer_key'],
+            $this->extensionConfiguration['consumer_secret'],
+            $this->extensionConfiguration['oauth_access_token'],
+            $this->extensionConfiguration['oauth_access_token_secret']
         );
-
-        if (!empty($response['errors'])) {
-            foreach ($response['errors'] as $error) {
-                $this->addFlashMessage('Twitter Grabber Error', $error['code'] . ': ' . $error['message'], FlashMessage::ERROR);
-            }
-        }
+        $response = $connection->get(
+            'statuses/user_timeline',
+            [
+                'screen_name' => $channel['url'],
+                'since_id' => $channel['last_post_identifier'],
+            ]
+        );
 
         $data = [
             'posts' => []
         ];
+
+        if (is_array($response->errors)) {
+            foreach ($response->errors as $error) {
+                $this->addFlashMessage('Twitter Grabber', $error->code . ': ' . $error->message, FlashMessage::ERROR);
+            }
+            return $data;
+        }
+
+        if (is_array($response)) {
+            foreach ($response as $tweet) {
+                $data['posts'][] = [
+                    'post_identifier' => $tweet->id,
+                    'publication_date' => strtotime($tweet->created_at),
+                    'teaser' => $tweet->text,
+                    'author' => $tweet->user->name,
+                    'author_url' => $tweet->user->url
+                ];
+            }
+            if (count($response) > 0) {
+                $this->addFlashMessage('Twitter Grabber', 'Grabbed ' . count($response) . ' tweets.', FlashMessage::OK);
+            } else {
+                $this->addFlashMessage('Twitter Grabber', 'No new tweets.', FlashMessage::INFO);
+            }
+        }
+
         return $data;
     }
 
@@ -63,5 +85,13 @@ class TwitterGrabber implements GrabberInterface
     {
         $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
         $flashMessageService->getMessageQueueByIdentifier()->enqueue(new FlashMessage($message, $title, $severity));
+    }
+
+    /**
+     * @return DatabaseConnection
+     */
+    protected function getDatabaseConnection()
+    {
+        return $GLOBALS['TYPO3_DB'];
     }
 }

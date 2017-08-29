@@ -30,7 +30,7 @@ class GrabberCommandController extends CommandController
         xdebug_break();
         $this->initialize();
         $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
-            'channel.uid, channel.pid, channel.grabber_class, channel.url, channel.feed_etag, channel.feed_last_modified, MAX(post.publication_date) as last_post_date',
+            'channel.uid, channel.pid, channel.grabber_class, channel.url, channel.feed_etag, channel.feed_last_modified, MAX(post.publication_date) as last_post_date, MAX(post.post_identifier) as last_post_identifier',
             'tx_socialgrabber_channel channel LEFT JOIN tx_socialgrabber_domain_model_post post ON (post.channel = channel.uid) ',
             'channel.deleted = 0 AND channel.hidden = 0',
             'channel.uid'
@@ -55,10 +55,7 @@ class GrabberCommandController extends CommandController
                 $grabber->setLastModified($channel['feed_last_modified']);
             }
 
-            $data = $grabber->grabData(
-                $channel['url'],
-                empty($channel['last_post_date']) ? null : \DateTime::createFromFormat('U', $channel['last_post_date'])
-            );
+            $data = $grabber->grabData($channel);
 
             // update channel
             if (!empty($data['feed_etag']) || !empty($data['feed_last_modified'])) {

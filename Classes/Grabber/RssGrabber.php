@@ -23,16 +23,15 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
     protected $lastModified;
 
     /**
-     * @param string $url
-     * @param \DateTimeInterface|null $lastUpdate
+     * @param array $channel
      * @return array
      * @throws \PicoFeed\Parser\MalformedXmlException
      */
-    public function grabData($url, $lastUpdate)
+    public function grabData($channel)
     {
         $reader = new Reader();
         try {
-            $resource = $reader->download($url, $this->lastModified, $this->etag);
+            $resource = $reader->download($channel['url'], $this->lastModified, $this->etag);
         } catch (UnsupportedFeedFormatException $e) {
             // Picofeed doesn't handle 304 (Not Modified) answers correctly and throws this exception when the feed hasn't changed
             return [];
@@ -49,6 +48,8 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
             'feed_etag' => $resource->getEtag(),
             'feed_last_modified' => $resource->getLastModified(),
         ];
+
+        $lastUpdate = empty($channel['last_post_date']) ? null : \DateTime::createFromFormat('U', $channel['last_post_date']);
 
         foreach($feed->getItems() as $item) {
             /** @var Item $item */
