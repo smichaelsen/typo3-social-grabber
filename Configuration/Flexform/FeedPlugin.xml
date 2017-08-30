@@ -1,0 +1,32 @@
+<T3DataStructure>
+    <sheets>
+        <sDEF>
+            <ROOT>
+                <TCEforms>
+                    <sheetTitle>Feed Options</sheetTitle>
+                </TCEforms>
+                <type>array</type>
+                <el>
+                    <channel>
+                        <TCEforms>
+                            <label>Channel</label>
+                            <config>
+                                <type>select</type>
+                                <foreign_table>tx_socialgrabber_channel</foreign_table>
+                                <renderType>selectSingle</renderType>
+                            </config>
+                        </TCEforms>
+                    </channel>
+                    <limit>
+                        <TCEforms>
+                            <label>Limit number of posts</label>
+                            <config>
+                                <type>input</type>
+                            </config>
+                        </TCEforms>
+                    </limit>
+                </el>
+            </ROOT>
+        </sDEF>
+    </sheets>
+</T3DataStructure>

@@ -1,0 +1,10 @@
+tt_content.list.20.tx_socialgrabber_feed = FLUIDTEMPLATE
+tt_content.list.20.tx_socialgrabber_feed {
+    templateRootPaths {
+        10 = EXT:social_grabber/Resources/Private/Templates
+    }
+    templateName = Feed
+    dataProcessing {
+        1 = Smichaelsen\SocialGrabber\DataProcessing\FeedDataProcessor
+    }
+}

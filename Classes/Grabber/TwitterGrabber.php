@@ -37,13 +37,13 @@ class TwitterGrabber implements GrabberInterface
             $this->extensionConfiguration['oauth_access_token'],
             $this->extensionConfiguration['oauth_access_token_secret']
         );
-        $response = $connection->get(
-            'statuses/user_timeline',
-            [
-                'screen_name' => $channel['url'],
-                'since_id' => $channel['last_post_identifier'],
-            ]
-        );
+        $fields = [
+            'screen_name' => $channel['url'],
+        ];
+        if ($channel['last_post_identifier']) {
+            $fields['since_id'] = $channel['last_post_identifier'];
+        }
+        $response = $connection->get('statuses/user_timeline', $fields);
 
         $data = [
             'posts' => []
