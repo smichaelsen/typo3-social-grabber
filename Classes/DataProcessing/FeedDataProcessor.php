@@ -7,9 +7,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\FlexFormService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
-use TYPO3\CMS\Frontend\Plugin\AbstractPlugin;
 
-class FeedDataProcessor extends AbstractPlugin implements DataProcessorInterface
+class FeedDataProcessor implements DataProcessorInterface
 {
 
     /**
