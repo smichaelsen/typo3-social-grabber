@@ -58,13 +58,23 @@ class TwitterGrabber implements GrabberInterface
 
         if (is_array($response)) {
             foreach ($response as $tweet) {
-                $data['posts'][] = [
+                $post = [
                     'post_identifier' => $tweet->id,
                     'publication_date' => strtotime($tweet->created_at),
                     'teaser' => $tweet->text,
                     'author' => $tweet->user->name,
-                    'author_url' => $tweet->user->url
+                    'author_url' => $tweet->user->url,
+                    'author_image_url' => $tweet->user->profile_image_url_https,
+                    'image_url' => '',
                 ];
+                if ($tweet->extended_entities) {
+                    $imageUrls = [];
+                    foreach ($tweet->extended_entities->media as $entity) {
+                        $imageUrls[] = $entity->media_url_https;
+                    }
+                    $post['image_url'] = json_encode($imageUrls);
+                }
+                $data['posts'][] = $post;
             }
             if (count($response) > 0) {
                 $this->addFlashMessage('Twitter Grabber', 'Grabbed ' . count($response) . ' tweets.', FlashMessage::OK);
