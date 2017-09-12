@@ -61,7 +61,7 @@ class TwitterGrabber implements GrabberInterface
                 $post = [
                     'post_identifier' => $tweet->id,
                     'publication_date' => strtotime($tweet->created_at),
-                    'teaser' => $tweet->text,
+                    'teaser' => $this->replaceEntities($tweet->text, $tweet->entities),
                     'author' => $tweet->user->name,
                     'author_url' => $tweet->user->url,
                     'author_image_url' => $tweet->user->profile_image_url_https,
@@ -103,5 +103,71 @@ class TwitterGrabber implements GrabberInterface
     protected function getDatabaseConnection()
     {
         return $GLOBALS['TYPO3_DB'];
+    }
+
+    /**
+     * @param string $text
+     * @param \stdClass $entities
+     * @return string
+     */
+    protected function replaceEntities($text, $entities)
+    {
+        $entityReplacements = [];
+        if (is_array($entities->urls)) {
+            foreach ($entities->urls as $url) {
+                $entityReplacements[] = [
+                    'start' => $url->indices[0],
+                    'end' => $url->indices[1],
+                    'replacement' => sprintf(
+                        '<a href="%s" target="_blank">%s</a>',
+                        $url->expanded_url,
+                        $url->display_url
+                    ),
+                ];
+            }
+        }
+        if (is_array($entities->media)) {
+            foreach ($entities->media as $mediaEntity) {
+                $entityReplacements[] = [
+                    'start' => $mediaEntity->indices[0],
+                    'end' => $mediaEntity->indices[1],
+                    'replacement' => '',
+                ];
+            }
+        }
+        if (is_array($entities->user_mentions)) {
+            foreach ($entities->user_mentions as $mention) {
+                $entityReplacements[] = [
+                    'start' => $mention->indices[0],
+                    'end' => $mention->indices[1],
+                    'replacement' => sprintf(
+                        '<a href="https://twitter.com/%1$s" target="_blank">@%1$s</a>',
+                        $mention->screen_name
+                    ),
+                ];
+            }
+        }
+        if(is_array($entities->hashtags))
+        {
+            foreach($entities->hashtags as $hashtag)
+            {
+                $entityReplacements[] = [
+                    'start' => $hashtag->indices[0],
+                    'end' => $hashtag->indices[1],
+                    'replacement' => sprintf(
+                        '<a href="https://twitter.com/hashtag/%1$s" target="_blank">#%1$s</a>',
+                        $hashtag->text
+                    ),
+                ];
+            }
+        }
+        usort($entityReplacements, function ($a, $b) {
+            return ($b['start'] - $a['start']);
+        });
+        $text = utf8_decode($text);
+        foreach ($entityReplacements as $entityReplacement) {
+            $text = substr_replace($text, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - $entityReplacement['start']);
+        }
+        return utf8_encode($text);
     }
 }
