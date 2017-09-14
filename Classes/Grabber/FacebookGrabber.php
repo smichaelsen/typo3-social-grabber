@@ -32,12 +32,11 @@ class FacebookGrabber implements GrabberInterface
         ];
         $posts = $this->getPagePosts($channel['url']);
         foreach ($posts->getDecodedBody()['data'] as $post) {
-            var_dump($post);
             $postRecord = [
                 'post_identifier' => $post['id'],
                 'publication_date' => strtotime($post['created_time']),
                 'teaser' => $this->replaceTags($post['message'], $post['message_tags']),
-                'image_url' => $post['full_picture'],
+                'image_url' => json_encode([$post['full_picture']]),
                 'url' => $post['permalink_url'],
             ];
             $data['posts'][] = $postRecord;

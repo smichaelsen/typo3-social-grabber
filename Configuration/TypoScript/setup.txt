@@ -2,6 +2,7 @@ tt_content.list.20.tx_socialgrabber_feed = FLUIDTEMPLATE
 tt_content.list.20.tx_socialgrabber_feed {
     templateRootPaths {
         10 = EXT:social_grabber/Resources/Private/Templates
+        20 = {$plugin.tx_socialgrabber.view.templateRootPath}
     }
     templateName = Feed
     dataProcessing {
