@@ -2,8 +2,9 @@
     "name": "smichaelsen/social-grabber",
     "type": "typo3-cms-extension",
     "require": {
-        "fguillot/picofeed": "0.1.25",
-        "abraham/twitteroauth": "0.7.4"
+        "abraham/twitteroauth": "^0.7.4",
+        "facebook/graph-sdk": "^5.6.1",
+        "fguillot/picofeed": "^0.1.25"
     },
     "autoload": {
         "psr-4": {
