@@ -2,7 +2,7 @@
 <ul>
 	<f:for each="{posts}" as="post">
 		<li>
-			{post.author}: {post.title} {post.teaser}
+			{post.author}: {post.title} {post.teaser -> f:format.raw()}
 		</li>
 	</f:for>
 </ul>

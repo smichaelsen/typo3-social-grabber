@@ -29,8 +29,8 @@ class FeedDataProcessor implements DataProcessorInterface
         $channel = (int) $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
         if ($channel > 0) {
             $posts = $this->getDatabaseConnection()->exec_SELECTgetRows(
-                '*',
-                'tx_socialgrabber_domain_model_post',
+                'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
+                'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
                 'channel = ' . $channel,
                 '',
                 'publication_date DESC'

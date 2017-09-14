@@ -65,6 +65,11 @@ class TwitterGrabber implements GrabberInterface
                     'author' => $tweet->user->name,
                     'author_url' => $tweet->user->url,
                     'author_image_url' => $tweet->user->profile_image_url_https,
+                    'url' => sprintf(
+                        'https://twitter.com/%s/status/%s',
+                        $tweet->user->screen_name,
+                        $tweet->id
+                    ),
                     'image_url' => '',
                 ];
                 if ($tweet->extended_entities) {
@@ -147,10 +152,8 @@ class TwitterGrabber implements GrabberInterface
                 ];
             }
         }
-        if(is_array($entities->hashtags))
-        {
-            foreach($entities->hashtags as $hashtag)
-            {
+        if (is_array($entities->hashtags)) {
+            foreach ($entities->hashtags as $hashtag) {
                 $entityReplacements[] = [
                     'start' => $hashtag->indices[0],
                     'end' => $hashtag->indices[1],
