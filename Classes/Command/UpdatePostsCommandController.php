@@ -48,12 +48,19 @@ class UpdatePostsCommandController extends AbstractCommandController
             }
         }
         $updatedPosts = $grabber->updatePosts($postsToUpdate);
-        foreach ($updatedPosts as $updatedPost) {
-            $this->getDatabaseConnection()->exec_UPDATEquery(
-                'tx_socialgrabber_domain_model_post',
-                'post_identifier = ' . $this->getDatabaseConnection()->fullQuoteStr($updatedPost['post_identifier'], ''),
-                $updatedPost
-            );
+        foreach ($updatedPosts as $postIdentifier => $updatedPost) {
+            if ($updatedPost === '__DELETED__') {
+                $this->getDatabaseConnection()->DELETEquery(
+                    'tx_socialgrabber_domain_model_post',
+                    'post_identifier = ' . $this->getDatabaseConnection()->fullQuoteStr($postIdentifier, '')
+                );
+            } else {
+                $this->getDatabaseConnection()->exec_UPDATEquery(
+                    'tx_socialgrabber_domain_model_post',
+                    'post_identifier = ' . $this->getDatabaseConnection()->fullQuoteStr($updatedPost['post_identifier'], ''),
+                    $updatedPost
+                );
+            }
         }
     }
 }

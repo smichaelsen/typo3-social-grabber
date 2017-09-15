@@ -202,19 +202,21 @@ class TwitterGrabber implements GrabberInterface, UpdatablePostsGrabberInterface
                 'id' => join(',', $ids),
                 'include_entities' => false,
                 'trim_user' => true,
+                'map' => true,
             ];
             $response = $this->getTwitterConnection()->get('statuses/lookup', $parameters);
-            if (!is_array($response)) {
-                continue;
-            }
-            foreach ($response as $tweet) {
-                $updatedPosts[] = [
-                    'reactions' => json_encode([
-                        'retweet_count' => $tweet->retweet_count,
-                        'favorite_count' => $tweet->favorite_count,
-                    ]),
-                    'post_identifier' => $tweet->id,
-                ];
+            foreach ($response->id as $id => $tweet) {
+                if ($tweet === null) {
+                    $updatedPosts[$id] = '__DELETED__';
+                } else {
+                    $updatedPosts[$id] = [
+                        'reactions' => json_encode([
+                            'retweet_count' => $tweet->retweet_count,
+                            'favorite_count' => $tweet->favorite_count,
+                        ]),
+                        'post_identifier' => $tweet->id,
+                    ];
+                }
             }
         }
         return $updatedPosts;
