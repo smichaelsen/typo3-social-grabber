@@ -13,7 +13,10 @@
                             <config>
                                 <type>select</type>
                                 <foreign_table>tx_socialgrabber_channel</foreign_table>
-                                <renderType>selectSingle</renderType>
+                                <foreign_table_where>ORDER BY tx_socialgrabber_channel.title ASC</foreign_table_where>
+                                <renderType>selectMultipleSideBySide</renderType>
+                                <minitems>1</minitems>
+                                <maxitems>99</maxitems>
                             </config>
                         </TCEforms>
                     </channel>

@@ -26,12 +26,16 @@ class FeedDataProcessor implements DataProcessorInterface
         array $processorConfiguration,
         array $processedData
     ) {
-        $channel = (int) $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
-        if ($channel > 0) {
+        $channelList = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
+        if (empty($channelList)) {
+            return $processedData;
+        }
+        $channelIds = GeneralUtility::intExplode(',', $channelList);
+        if (count($channelIds) > 0) {
             $posts = $this->getDatabaseConnection()->exec_SELECTgetRows(
                 'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
                 'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
-                'channel = ' . $channel,
+                'tx_socialgrabber_domain_model_post.channel IN (' . join(',', $channelIds) . ')',
                 '',
                 'publication_date DESC'
             );

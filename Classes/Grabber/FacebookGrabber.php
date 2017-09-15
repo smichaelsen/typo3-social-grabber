@@ -30,7 +30,7 @@ class FacebookGrabber implements GrabberInterface
         $data = [
             'posts' => []
         ];
-        $posts = $this->getPagePosts($channel['url']);
+        $posts = $this->getPagePosts($channel['url'], $channel['last_post_date']);
         foreach ($posts->getDecodedBody()['data'] as $post) {
             $postRecord = [
                 'post_identifier' => $post['id'],
@@ -46,9 +46,10 @@ class FacebookGrabber implements GrabberInterface
 
     /**
      * @param string $pageName
+     * @param int $since
      * @return \Facebook\FacebookResponse
      */
-    protected function getPagePosts($pageName)
+    protected function getPagePosts($pageName, $since)
     {
         $accessToken = sprintf(
             '%s|%s',
@@ -63,8 +64,9 @@ class FacebookGrabber implements GrabberInterface
         ]);
 
         $endpoint = sprintf(
-            '/%s/posts?fields=%s',
+            '/%s/posts?since=%d&fields=%s',
             $pageName,
+            $since,
             'message,message_tags,full_picture,created_time,link,name,permalink_url'
         );
         return $fb->get($endpoint);
@@ -77,6 +79,9 @@ class FacebookGrabber implements GrabberInterface
      */
     protected function replaceTags($message, $messageTags)
     {
+        if (!is_array($messageTags)) {
+            return $message;
+        }
         $tagReplacements = [];
         foreach ($messageTags as $messageTag) {
             $tagReplacement = [

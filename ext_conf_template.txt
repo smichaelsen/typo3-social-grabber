@@ -1,14 +1,14 @@
 # customcategory=facebook=Facebook
 # customcategory=twitter=Twitter
 
-# cat=twitter/file/1; type=string; label=Twitter API Key:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
-oauth_access_token =
-# cat=twitter/file/1; type=string; label=Twitter API Secret:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
-oauth_access_token_secret =
-# cat=twitter/file/1; type=string; label=Twitter API Secret:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
+# cat=twitter/file/1; type=string; label=Consumer Key (API Key):You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
 consumer_key =
-# cat=twitter/file/1; type=string; label=Twitter API Secret:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
+# cat=twitter/file/2; type=string; label=Consumer Secret (API Secret):You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
 consumer_secret =
+# cat=twitter/file/3; type=string; label=Access Token:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
+oauth_access_token =
+# cat=twitter/file/4; type=string; label=Access Token Secret:You need to register a twitter app if you want to use the tweet grabber. Create your twitter app at https://apps.twitter.com/
+oauth_access_token_secret =
 
 # cat=facebook/file/1; type=string; label=Facebook API ID
 facebook.app_id =
