@@ -14,22 +14,12 @@ return [
         'default_sortby' => 'ORDER BY publication_date',
         'delete' => 'deleted',
         'searchFields' => 'title',
-        'iconfile' => 'EXT:social_grabber/Resources/Public/Icons/tx_socialgrabber_domain_model_post.gif'
+        'iconfile' => 'EXT:social_grabber/Resources/Public/Icons/tx_socialgrabber_domain_model_post.gif',
     ],
     'types' => [
-        '1' => ['showitem' => 'title, grabber_class, url'],
+        '1' => ['showitem' => 'title, url'],
     ],
     'columns' => [
-        'grabber_class' => [
-            'label' => $lll . '.grabber_class',
-            'config' => [
-                'type' => 'select',
-                'renderType' => 'selectSingle',
-                'items' => [
-                    ['RSS', \Smichaelsen\SocialGrabber\Grabber\RssGrabber::class],
-                ]
-            ],
-        ],
         'teaser' => [],
         'title' => [
             'label' => $lll . '.title',
