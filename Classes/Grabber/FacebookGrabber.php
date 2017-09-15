@@ -4,7 +4,7 @@ namespace Smichaelsen\SocialGrabber\Grabber;
 
 use Facebook\Facebook;
 
-class FacebookGrabber implements GrabberInterface
+class FacebookGrabber implements GrabberInterface, UpdatablePostsGrabberInterface
 {
 
     /**
@@ -13,20 +13,11 @@ class FacebookGrabber implements GrabberInterface
     protected $extensionConfiguration;
 
     /**
-     *
-     */
-    protected function initialize()
-    {
-        $this->extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['social_grabber']);
-    }
-
-    /**
      * @param array $channel
      * @return array
      */
     public function grabData($channel)
     {
-        $this->initialize();
         $data = [
             'posts' => []
         ];
@@ -51,25 +42,34 @@ class FacebookGrabber implements GrabberInterface
      */
     protected function getPagePosts($pageName, $since)
     {
-        $accessToken = sprintf(
-            '%s|%s',
-            $this->extensionConfiguration['facebook.']['app_id'],
-            $this->extensionConfiguration['facebook.']['app_secret']
-        );
-        $fb = new Facebook([
-            'app_id' => $this->extensionConfiguration['facebook.']['app_id'],
-            'app_secret' => $this->extensionConfiguration['facebook.']['app_secret'],
-            'default_graph_version' => 'v2.10',
-            'default_access_token' => $accessToken,
-        ]);
-
         $endpoint = sprintf(
             '/%s/posts?since=%d&fields=%s',
             $pageName,
             $since,
             'message,message_tags,full_picture,created_time,link,name,permalink_url'
         );
-        return $fb->get($endpoint);
+        return $this->getFacebookConnection()->get($endpoint);
+    }
+
+    /**
+     * @return Facebook
+     */
+    protected function getFacebookConnection(){
+        static $facebook;
+        if (!$facebook instanceof Facebook) {
+            $accessToken = sprintf(
+                '%s|%s',
+                $this->extensionConfiguration['facebook.']['app_id'],
+                $this->extensionConfiguration['facebook.']['app_secret']
+            );
+            $facebook = new Facebook([
+                'app_id' => $this->extensionConfiguration['facebook.']['app_id'],
+                'app_secret' => $this->extensionConfiguration['facebook.']['app_secret'],
+                'default_graph_version' => 'v2.10',
+                'default_access_token' => $accessToken,
+            ]);
+        }
+        return $facebook;
     }
 
     /**
@@ -111,5 +111,37 @@ class FacebookGrabber implements GrabberInterface
             $message = substr_replace($message, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - $entityReplacement['start']);
         }
         return utf8_encode($message);
+    }
+
+    /**
+     * @param array $extensionConfiguration
+     * @return void
+     */
+    public function setExtensionConfiguration($extensionConfiguration)
+    {
+        $this->extensionConfiguration = $extensionConfiguration;
+    }
+
+    /**
+     * @param array $posts
+     * @return array
+     */
+    public function updatePosts($posts)
+    {
+        $updatedPosts = [];
+        foreach ($posts as $post) {
+            $endpoint = sprintf(
+                '/%s/reactions?summary=total_count',
+                $post['post_identifier']
+            );
+            $response = $this->getFacebookConnection()->get($endpoint);
+            $updatedPosts[] = [
+                'post_identifier' => $post['post_identifier'],
+                'reactions' => json_encode([
+                    'like_count' => $response->getDecodedBody()['summary']['total_count'],
+                ]),
+            ];
+        }
+        return $updatedPosts;
     }
 }

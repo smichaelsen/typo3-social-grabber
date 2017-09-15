@@ -32,13 +32,20 @@ class FeedDataProcessor implements DataProcessorInterface
         }
         $channelIds = GeneralUtility::intExplode(',', $channelList);
         if (count($channelIds) > 0) {
-            $posts = $this->getDatabaseConnection()->exec_SELECTgetRows(
+            $posts = [];
+            $res = $this->getDatabaseConnection()->exec_SELECTquery(
                 'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
                 'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
                 'tx_socialgrabber_domain_model_post.channel IN (' . join(',', $channelIds) . ')',
                 '',
                 'publication_date DESC'
             );
+            while ($post = $this->getDatabaseConnection()->sql_fetch_assoc($res)) {
+                if ($post['reactions']) {
+                    $post['reactions'] = json_decode($post['reactions'], true);
+                }
+                $posts[] = $post;
+            }
             $processedData['posts'] = $posts;
         }
         return $processedData;

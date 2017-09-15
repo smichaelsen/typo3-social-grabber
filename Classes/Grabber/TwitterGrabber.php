@@ -8,8 +8,11 @@ use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class TwitterGrabber implements GrabberInterface
+class TwitterGrabber implements GrabberInterface, UpdatablePostsGrabberInterface
 {
+
+    // Twitter allows lookup for 100 tweets in one request
+    const TWITTER_STATUS_LOOKUP_LIMIT = 100;
 
     /**
      * @var array
@@ -17,33 +20,18 @@ class TwitterGrabber implements GrabberInterface
     protected $extensionConfiguration;
 
     /**
-     *
-     */
-    protected function initialize()
-    {
-        $this->extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['social_grabber']);
-    }
-
-    /**
      * @param array $channel
      * @return array
      */
     public function grabData($channel)
     {
-        $this->initialize();
-        $connection = new TwitterOAuth(
-            $this->extensionConfiguration['consumer_key'],
-            $this->extensionConfiguration['consumer_secret'],
-            $this->extensionConfiguration['oauth_access_token'],
-            $this->extensionConfiguration['oauth_access_token_secret']
-        );
         $fields = [
             'screen_name' => $channel['url'],
         ];
         if ($channel['last_post_identifier']) {
             $fields['since_id'] = $channel['last_post_identifier'];
         }
-        $response = $connection->get('statuses/user_timeline', $fields);
+        $response = $this->getTwitterConnection()->get('statuses/user_timeline', $fields);
 
         $data = [
             'posts' => []
@@ -81,11 +69,6 @@ class TwitterGrabber implements GrabberInterface
                 }
                 $data['posts'][] = $post;
             }
-            if (count($response) > 0) {
-                $this->addFlashMessage('Twitter Grabber', 'Grabbed ' . count($response) . ' tweets.', FlashMessage::OK);
-            } else {
-                $this->addFlashMessage('Twitter Grabber', 'No new tweets.', FlashMessage::INFO);
-            }
         }
 
         return $data;
@@ -100,6 +83,23 @@ class TwitterGrabber implements GrabberInterface
     {
         $flashMessageService = GeneralUtility::makeInstance(FlashMessageService::class);
         $flashMessageService->getMessageQueueByIdentifier()->enqueue(new FlashMessage($message, $title, $severity));
+    }
+
+    /**
+     * @return TwitterOAuth
+     */
+    protected function getTwitterConnection()
+    {
+        static $twitter;
+        if (!$twitter instanceof TwitterOAuth) {
+            $twitter = new TwitterOAuth(
+                $this->extensionConfiguration['consumer_key'],
+                $this->extensionConfiguration['consumer_secret'],
+                $this->extensionConfiguration['oauth_access_token'],
+                $this->extensionConfiguration['oauth_access_token_secret']
+            );
+        }
+        return $twitter;
     }
 
     /**
@@ -172,5 +172,51 @@ class TwitterGrabber implements GrabberInterface
             $text = substr_replace($text, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - $entityReplacement['start']);
         }
         return utf8_encode($text);
+    }
+
+    /**
+     * @param array $extensionConfiguration
+     * @return void
+     */
+    public function setExtensionConfiguration($extensionConfiguration)
+    {
+        $this->extensionConfiguration = $extensionConfiguration;
+    }
+
+    /**
+     * @param array $posts
+     * @return array
+     */
+    public function updatePosts($posts)
+    {
+        $updatedPosts = [];
+        foreach (array_chunk($posts, self::TWITTER_STATUS_LOOKUP_LIMIT) as $postsChunk) {
+            $ids = array_reduce($postsChunk, function($ids, $post) {
+                if (!is_array($ids)) {
+                    $ids = [];
+                }
+                $ids[] = $post['post_identifier'];
+                return $ids;
+            });
+            $parameters = [
+                'id' => join(',', $ids),
+                'include_entities' => false,
+                'trim_user' => true,
+            ];
+            $response = $this->getTwitterConnection()->get('statuses/lookup', $parameters);
+            if (!is_array($response)) {
+                continue;
+            }
+            foreach ($response as $tweet) {
+                $updatedPosts[] = [
+                    'reactions' => json_encode([
+                        'retweet_count' => $tweet->retweet_count,
+                        'favorite_count' => $tweet->favorite_count,
+                    ]),
+                    'post_identifier' => $tweet->id,
+                ];
+            }
+        }
+        return $updatedPosts;
     }
 }

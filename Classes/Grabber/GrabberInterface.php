@@ -5,6 +5,12 @@ interface GrabberInterface
 {
 
     /**
+     * @param array $extensionConfiguration
+     * @return void
+     */
+    public function setExtensionConfiguration($extensionConfiguration);
+
+    /**
      * @param array $channel
      * @return array
      */
