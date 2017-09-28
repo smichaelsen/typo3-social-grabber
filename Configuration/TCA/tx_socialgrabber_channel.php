@@ -15,7 +15,7 @@ return [
         'default_sortby' => 'ORDER BY title',
         'delete' => 'deleted',
         'searchFields' => 'title',
-        'iconfile' => 'EXT:social_grabber/Resources/Public/Icons/tx_socialgrabber_channel.gif',
+        'iconfile' => 'EXT:social_grabber/Resources/Public/Icons/tx_socialgrabber_channel.svg',
     ],
     'types' => [
         '1' => ['showitem' => 'title, grabber_class, url'],

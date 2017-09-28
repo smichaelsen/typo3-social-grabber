@@ -11,22 +11,39 @@ return [
     'ctrl' => [
         'title' => $lll,
         'label' => 'title',
-        'default_sortby' => 'ORDER BY publication_date',
+        'label_alt' => 'teaser',
+        'default_sortby' => 'ORDER BY publication_date DESC',
         'delete' => 'deleted',
         'searchFields' => 'title',
-        'iconfile' => 'EXT:social_grabber/Resources/Public/Icons/tx_socialgrabber_domain_model_post.gif',
+        'iconfile' => 'EXT:social_grabber/Resources/Public/Icons/tx_socialgrabber_domain_model_post.svg',
     ],
     'types' => [
-        '1' => ['showitem' => 'title, url'],
+        '1' => ['showitem' => 'title, teaser, url, channel'],
     ],
     'columns' => [
-        'teaser' => [],
+        'channel' => [
+            'label' => $lll . '.channel',
+            'config' => [
+                'type' => 'select',
+                'renderType' => 'selectSingle',
+                'foreign_table' => 'tx_socialgrabber_channel',
+                'foreign_table_where' => 'ORDER BY tx_socialgrabber_channel.title',
+                'maxitems' => 1,
+            ],
+        ],
+        'teaser' => [
+            'label' => $lll . '.teaser',
+            'config' => [
+                'type' => 'text',
+                'eval' => 'trim',
+            ],
+        ],
         'title' => [
             'label' => $lll . '.title',
             'config' => [
                 'type' => 'input',
                 'size' => 30,
-                'eval' => 'trim'
+                'eval' => 'trim',
             ],
         ],
         'url' => [
@@ -34,7 +51,7 @@ return [
             'config' => [
                 'type' => 'input',
                 'size' => 60,
-                'eval' => 'trim'
+                'eval' => 'trim',
             ],
         ],
     ],
