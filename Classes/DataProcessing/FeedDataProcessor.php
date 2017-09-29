@@ -7,6 +7,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\FlexFormService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
+use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class FeedDataProcessor implements DataProcessorInterface
 {
@@ -36,7 +37,11 @@ class FeedDataProcessor implements DataProcessorInterface
             $res = $this->getDatabaseConnection()->exec_SELECTquery(
                 'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
                 'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
-                'tx_socialgrabber_domain_model_post.channel IN (' . join(',', $channelIds) . ')',
+                sprintf(
+                    'tx_socialgrabber_domain_model_post.channel IN (%s)%s',
+                    join(',', $channelIds),
+                    $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post')
+                ),
                 '',
                 'publication_date DESC'
             );
@@ -63,5 +68,13 @@ class FeedDataProcessor implements DataProcessorInterface
     protected function getDatabaseConnection()
     {
         return $GLOBALS['TYPO3_DB'];
+    }
+
+    /**
+     * @return TypoScriptFrontendController
+     */
+    protected function getTypoScriptFrontendController()
+    {
+        return $GLOBALS['TSFE'];
     }
 }
