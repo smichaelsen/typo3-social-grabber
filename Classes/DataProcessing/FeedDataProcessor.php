@@ -2,6 +2,7 @@
 
 namespace Smichaelsen\SocialGrabber\DataProcessing;
 
+use Smichaelsen\SocialGrabber\Grabber\TopicFilterableGrabberInterface;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Service\FlexFormService;
@@ -29,6 +30,7 @@ class FeedDataProcessor implements DataProcessorInterface
     ) {
         $channelList = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
         $limit = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'limit');
+        $filterTopics = $this->topicListToArray($this->getFlexFormValue($processedData['data']['pi_flexform'], 'filter_topics'));
         if (empty($channelList)) {
             return $processedData;
         }
@@ -39,8 +41,9 @@ class FeedDataProcessor implements DataProcessorInterface
                 'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
                 'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
                 sprintf(
-                    'tx_socialgrabber_domain_model_post.channel IN (%s)%s',
+                    'tx_socialgrabber_domain_model_post.channel IN (%s)%s%s',
                     join(',', $channelIds),
+                    $this->getFilterTopicsWhereStatement($filterTopics),
                     $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post')
                 ),
                 '',
@@ -56,6 +59,56 @@ class FeedDataProcessor implements DataProcessorInterface
             $processedData['posts'] = $posts;
         }
         return $processedData;
+    }
+
+    /**
+     * @param array $filterTopics
+     * @return string
+     */
+    protected function getFilterTopicsWhereStatement($filterTopics)
+    {
+        if (count($filterTopics) === 0) {
+            return '';
+        }
+        $availableGrabberClasses = array_map(function ($pair) {
+            return $pair[1];
+        }, $GLOBALS['TCA']['tx_socialgrabber_channel']['columns']['grabber_class']['config']['items']);
+        $conditions = [];
+        foreach ($availableGrabberClasses as $grabberClass) {
+            $grabberCondition = 'tx_socialgrabber_channel.grabber_class = "' . str_replace('\\', '\\\\', $grabberClass) . '"';
+            if (in_array(TopicFilterableGrabberInterface::class, class_implements($grabberClass))) {
+                /** @var TopicFilterableGrabberInterface $grabber */
+                $grabber = new $grabberClass();
+                $grabberCondition .= $grabber->getTopicFilterWhereStatement($filterTopics);
+            }
+            $conditions[] = $grabberCondition;
+        }
+        if (count($conditions) === 0) {
+            return '';
+        }
+        return ' AND ((' . join(') OR (', $conditions) . '))';
+    }
+
+    /**
+     * @param string $toplicList
+     * @return array
+     */
+    protected function topicListToArray($toplicList)
+    {
+        if (empty($toplicList)) {
+            return [];
+        }
+        $topics = array_filter(
+            array_map(
+                function ($topic) {
+                    return ltrim($topic, '#');
+                },
+                GeneralUtility::trimExplode(',', $toplicList)
+            ), function ($topic) {
+            return !empty($topic);
+        }
+        );
+        return $topics;
     }
 
     protected function getFlexFormValue($flexFormContent, $fieldName)

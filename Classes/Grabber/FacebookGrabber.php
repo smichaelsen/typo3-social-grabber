@@ -4,7 +4,7 @@ namespace Smichaelsen\SocialGrabber\Grabber;
 
 use Facebook\Facebook;
 
-class FacebookGrabber implements GrabberInterface, UpdatablePostsGrabberInterface
+class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterface, UpdatablePostsGrabberInterface
 {
 
     /**
@@ -54,7 +54,8 @@ class FacebookGrabber implements GrabberInterface, UpdatablePostsGrabberInterfac
     /**
      * @return Facebook
      */
-    protected function getFacebookConnection(){
+    protected function getFacebookConnection()
+    {
         static $facebook;
         if (!$facebook instanceof Facebook) {
             $accessToken = sprintf(
@@ -143,5 +144,21 @@ class FacebookGrabber implements GrabberInterface, UpdatablePostsGrabberInterfac
             ];
         }
         return $updatedPosts;
+    }
+
+    /**
+     * @param array $topics
+     * @return string
+     */
+    public function getTopicFilterWhereStatement($topics)
+    {
+        $topicStatements = [];
+        foreach ($topics as $topic) {
+            $topicStatements[] = 'LOWER(tx_socialgrabber_domain_model_post.teaser) LIKE "%#' . strtolower($topic) . '%"';
+        }
+        if (count($topicStatements) === 0) {
+            return '';
+        }
+        return ' AND (' . join(' OR ', $topicStatements) . ')';
     }
 }

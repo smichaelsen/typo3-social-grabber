@@ -8,7 +8,7 @@ use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class TwitterGrabber implements GrabberInterface, UpdatablePostsGrabberInterface
+class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterface, UpdatablePostsGrabberInterface
 {
 
     // Twitter allows lookup for 100 tweets in one request
@@ -191,7 +191,7 @@ class TwitterGrabber implements GrabberInterface, UpdatablePostsGrabberInterface
     {
         $updatedPosts = [];
         foreach (array_chunk($posts, self::TWITTER_STATUS_LOOKUP_LIMIT) as $postsChunk) {
-            $ids = array_reduce($postsChunk, function($ids, $post) {
+            $ids = array_reduce($postsChunk, function ($ids, $post) {
                 if (!is_array($ids)) {
                     $ids = [];
                 }
@@ -220,5 +220,21 @@ class TwitterGrabber implements GrabberInterface, UpdatablePostsGrabberInterface
             }
         }
         return $updatedPosts;
+    }
+
+    /**
+     * @param array $topics
+     * @return string
+     */
+    public function getTopicFilterWhereStatement($topics)
+    {
+        $topicStatements = [];
+        foreach ($topics as $topic) {
+            $topicStatements[] = 'LOWER(tx_socialgrabber_domain_model_post.teaser) LIKE "%>#' . strtolower($topic) . '<%"';
+        }
+        if (count($topicStatements) === 0) {
+            return '';
+        }
+        return ' AND (' . join(' OR ', $topicStatements) . ')';
     }
 }

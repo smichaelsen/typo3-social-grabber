@@ -28,6 +28,14 @@
                             </config>
                         </TCEforms>
                     </limit>
+                    <filter_topics>
+                        <TCEforms>
+                            <label>Only output posts with the following topics/hashtags (comma separated)</label>
+                            <config>
+                                <type>input</type>
+                            </config>
+                        </TCEforms>
+                    </filter_topics>
                 </el>
             </ROOT>
         </sDEF>
