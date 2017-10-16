@@ -150,8 +150,9 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                     'start' => $mention->indices[0],
                     'end' => $mention->indices[1],
                     'replacement' => sprintf(
-                        '<a href="https://twitter.com/%1$s" target="_blank">@%1$s</a>',
-                        $mention->screen_name
+                        '<a href="https://twitter.com/%1$s" title="%2$s" target="_blank">@%1$s</a>',
+                        $mention->screen_name,
+                        $mention->name
                     ),
                 ];
             }
@@ -168,14 +169,28 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                 ];
             }
         }
+        // reverse replacements because they have to be executed from end to beginning
         usort($entityReplacements, function ($a, $b) {
             return ($b['start'] - $a['start']);
         });
-        $text = utf8_decode($text);
         foreach ($entityReplacements as $entityReplacement) {
-            $text = substr_replace($text, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - $entityReplacement['start']);
+            $text = $this->mb_substr_replace($text, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end']);
         }
-        return utf8_encode($text);
+        return $text;
+    }
+
+    /**
+     * See http://php.net/manual/de/ref.mbstring.php#94220
+     *
+     * @param string $input
+     * @param string $replace
+     * @param int $posOpen
+     * @param int $posClose
+     * @return string
+     */
+    protected function mb_substr_replace($input, $replace, $posOpen, $posClose)
+    {
+        return mb_substr($input, 0, $posOpen) . $replace . mb_substr($input, $posClose + 1);
     }
 
     /**
