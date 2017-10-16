@@ -28,6 +28,7 @@ class FeedDataProcessor implements DataProcessorInterface
         array $processedData
     ) {
         $channelList = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
+        $limit = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'limit');
         if (empty($channelList)) {
             return $processedData;
         }
@@ -43,7 +44,8 @@ class FeedDataProcessor implements DataProcessorInterface
                     $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post')
                 ),
                 '',
-                'publication_date DESC'
+                'publication_date DESC',
+                $limit
             );
             while ($post = $this->getDatabaseConnection()->sql_fetch_assoc($res)) {
                 if ($post['reactions']) {
