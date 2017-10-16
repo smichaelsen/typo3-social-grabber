@@ -13,6 +13,11 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
 {
 
     /**
+     * @var array
+     */
+    protected $extensionConfiguration;
+
+    /**
      * @var string
      */
     protected $etag;
@@ -86,5 +91,14 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
     public function setLastModified($lastModified)
     {
         $this->lastModified = $lastModified;
+    }
+
+    /**
+     * @param array $extensionConfiguration
+     * @return void
+     */
+    public function setExtensionConfiguration($extensionConfiguration)
+    {
+        $this->extensionConfiguration = $extensionConfiguration;
     }
 }
