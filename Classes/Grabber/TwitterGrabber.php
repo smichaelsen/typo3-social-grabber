@@ -46,6 +46,10 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
 
         if (is_array($response)) {
             foreach ($response as $tweet) {
+                $isRetweet = !empty($tweet->retweeted_status);
+                if ($isRetweet) {
+                    $tweet = $tweet->retweeted_status;
+                }
                 $post = [
                     'post_identifier' => $tweet->id,
                     'publication_date' => strtotime($tweet->created_at),
