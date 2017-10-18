@@ -50,6 +50,7 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                 $isRetweet = !empty($tweet->retweeted_status);
                 if ($isRetweet) {
                     $post = $this->createPostRecordFromTweet($tweet->retweeted_status);
+                    $post['post_identifier'] = $tweet->id;
                 } else {
                     $post = $this->createPostRecordFromTweet($tweet);
                 }
