@@ -37,13 +37,21 @@ class FeedDataProcessor implements DataProcessorInterface
         $channelIds = GeneralUtility::intExplode(',', $channelList);
         if (count($channelIds) > 0) {
             $posts = [];
+            $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
+                'uid, grabber_class, filter_topics',
+                'tx_socialgrabber_channel',
+                sprintf(
+                    'tx_socialgrabber_channel.uid IN (%s)',
+                    join(',', $channelIds)
+                )
+            );
             $res = $this->getDatabaseConnection()->exec_SELECTquery(
                 'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
                 'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
                 sprintf(
                     'tx_socialgrabber_domain_model_post.channel IN (%s)%s%s',
                     join(',', $channelIds),
-                    $this->getFilterTopicsWhereStatement($filterTopics),
+                    $this->getFilterTopicsWhereStatement($filterTopics, $channels),
                     $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post')
                 ),
                 '',
@@ -63,30 +71,39 @@ class FeedDataProcessor implements DataProcessorInterface
 
     /**
      * @param array $filterTopics
+     * @param array $channels
      * @return string
      */
-    protected function getFilterTopicsWhereStatement($filterTopics)
+    protected function getFilterTopicsWhereStatement($filterTopics, $channels)
     {
-        if (count($filterTopics) === 0) {
+        if (count($channels) === 0) {
             return '';
         }
-        $availableGrabberClasses = array_map(function ($pair) {
-            return $pair[1];
-        }, $GLOBALS['TCA']['tx_socialgrabber_channel']['columns']['grabber_class']['config']['items']);
         $conditions = [];
-        foreach ($availableGrabberClasses as $grabberClass) {
-            $grabberCondition = 'tx_socialgrabber_channel.grabber_class = "' . str_replace('\\', '\\\\', $grabberClass) . '"';
-            if (in_array(TopicFilterableGrabberInterface::class, class_implements($grabberClass))) {
-                /** @var TopicFilterableGrabberInterface $grabber */
-                $grabber = new $grabberClass();
-                $grabberCondition .= $grabber->getTopicFilterWhereStatement($filterTopics);
+        foreach ($channels as $channel) {
+            if (!in_array(TopicFilterableGrabberInterface::class, class_implements($channel['grabber_class']))) {
+                continue;
             }
+            /** @var TopicFilterableGrabberInterface $grabber */
+            $grabber = new $channel['grabber_class'];
+            if (!empty($channel['filter_topics'])) {
+                $filterTopics = array_merge($filterTopics, $this->topicListToArray($channel['filter_topics']));
+            }
+            if (count($filterTopics) === 0) {
+                continue;
+            }
+            $grabberCondition = sprintf(
+                'tx_socialgrabber_channel.grabber_class = "%s"%s',
+                str_replace('\\', '\\\\', $channel['grabber_class']),
+                $grabber->getTopicFilterWhereStatement($filterTopics)
+            );
             $conditions[] = $grabberCondition;
         }
         if (count($conditions) === 0) {
             return '';
         }
-        return ' AND ((' . join(') OR (', $conditions) . '))';
+        $where = ' AND ((' . join(') OR (', $conditions) . '))';
+        return $where;
     }
 
     /**

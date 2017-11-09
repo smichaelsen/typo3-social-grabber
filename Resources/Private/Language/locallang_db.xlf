@@ -8,6 +8,9 @@
 			<trans-unit id="tx_socialgrabber_channel">
 				<source>Channel</source>
 			</trans-unit>
+			<trans-unit id="tx_socialgrabber_channel.filter_topics">
+				<source>Only output posts with the following topics/hashtags (comma separated)</source>
+			</trans-unit>
 			<trans-unit id="tx_socialgrabber_channel.grabber_class">
 				<source>Grabber</source>
 			</trans-unit>

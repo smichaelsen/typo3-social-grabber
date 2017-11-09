@@ -18,9 +18,15 @@ return [
         'iconfile' => 'EXT:social_grabber/Resources/Public/Icons/tx_socialgrabber_channel.svg',
     ],
     'types' => [
-        '1' => ['showitem' => 'title, grabber_class, url'],
+        '1' => ['showitem' => 'title, grabber_class, url, filter_topics'],
     ],
     'columns' => [
+        'filter_topics' => [
+            'label' => $lll . '.filter_topics',
+            'config' => [
+                'type' => 'input',
+            ],
+        ],
         'grabber_class' => [
             'label' => $lll . '.grabber_class',
             'config' => [

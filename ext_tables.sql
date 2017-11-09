@@ -6,6 +6,7 @@ CREATE TABLE tx_socialgrabber_channel (
     url varchar(2083) NOT NULL default '',
     feed_etag varchar(255) NOT NULL default '',
     feed_last_modified varchar(255) NOT NULL default '',
+    filter_topics text,
 
     crdate int(11) DEFAULT '0' NOT NULL,
     tstamp int(11) DEFAULT '0' NOT NULL,
