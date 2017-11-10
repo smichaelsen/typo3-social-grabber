@@ -47,14 +47,14 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
 
         if (is_array($response)) {
             foreach ($response as $tweet) {
+                $post = $this->createPostRecordFromTweet($tweet);
                 $isRetweet = !empty($tweet->retweeted_status);
                 if ($isRetweet) {
-                    $post = $this->createPostRecordFromTweet($tweet->retweeted_status);
-                    $post['post_identifier'] = $tweet->id;
-                } else {
-                    $post = $this->createPostRecordFromTweet($tweet);
+                    $retweetedPost = $this->createPostRecordFromTweet($tweet->retweeted_status);
+                    $retweetedPost['is_shared_post'] = '1';
+                    $data['posts'][] = $retweetedPost;
+                    $post['shared_post_identifier'] = $tweet->retweeted_status->id;
                 }
-
                 $data['posts'][] = $post;
             }
         }
@@ -80,6 +80,8 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                 $tweet->id
             ),
             'image_url' => '',
+            'is_shared_post' => '0',
+            'shared_post_identifier' => '',
         ];
         if ($tweet->extended_entities) {
             $imageUrls = [];

@@ -31,17 +31,18 @@ class FeedDataProcessor implements DataProcessorInterface
         $channelList = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
         $limit = (int) $this->getFlexFormValue($processedData['data']['pi_flexform'], 'limit');
         $filterTopics = $this->topicListToArray($this->getFlexFormValue($processedData['data']['pi_flexform'], 'filter_topics'));
+        $excludeSharedPosts = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'exclude_shared_posts');
         if (empty($channelList)) {
             return $processedData;
         }
         $channelIds = GeneralUtility::intExplode(',', $channelList);
         if (count($channelIds) > 0) {
-            $processedData['posts'] = $this->loadPosts($channelIds, $limit, $filterTopics);
+            $processedData['posts'] = $this->loadPosts($channelIds, $limit, $filterTopics, $excludeSharedPosts);
         }
         return $processedData;
     }
 
-    protected function loadPosts(array $channelIds, int $limit, array $filterTopics): array
+    protected function loadPosts(array $channelIds, int $limit, array $filterTopics, bool $excludeSharedPosts): array
     {
         $posts = [];
         $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
@@ -52,15 +53,26 @@ class FeedDataProcessor implements DataProcessorInterface
                 join(',', $channelIds)
             )
         );
+        $conditions = [];
+        $conditions[] = sprintf(
+            'tx_socialgrabber_domain_model_post.channel IN (%s)',
+            join(',', $channelIds)
+        );
+        $filterStatement = $this->getFilterTopicsWhereStatement($filterTopics, $channels);
+        if (!empty($filterStatement)) {
+            $conditions[] = $filterStatement;
+        }
+        if ($excludeSharedPosts) {
+            $conditions[] = 'shared_post_identifier = \'\'';
+        }
+        $conditions[] = 'is_shared_post = 0';
+
+        $where = join(' AND ', $conditions) . $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post');
+
         $res = $this->getDatabaseConnection()->exec_SELECTquery(
             'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
             'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
-            sprintf(
-                'tx_socialgrabber_domain_model_post.channel IN (%s)%s%s',
-                join(',', $channelIds),
-                $this->getFilterTopicsWhereStatement($filterTopics, $channels),
-                $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post')
-            ),
+            $where,
             '',
             'publication_date DESC',
             $limit === 0 ? '' : $limit
@@ -108,7 +120,7 @@ class FeedDataProcessor implements DataProcessorInterface
         if (count($conditions) === 0) {
             return '';
         }
-        $where = ' AND ((' . join(') OR (', $conditions) . '))';
+        $where = '((' . join(') OR (', $conditions) . '))';
         return $where;
     }
 

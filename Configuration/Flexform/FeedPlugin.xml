@@ -36,6 +36,14 @@
                             </config>
                         </TCEforms>
                     </filter_topics>
+                        <exclude_shared_posts>
+                        <TCEforms>
+                            <label>Exclude shared posts (retweets) from output</label>
+                            <config>
+                                <type>check</type>
+                            </config>
+                        </TCEforms>
+                    </exclude_shared_posts>
                 </el>
             </ROOT>
         </sDEF>

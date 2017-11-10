@@ -31,6 +31,8 @@ CREATE TABLE tx_socialgrabber_domain_model_post (
     image_url text,
     deleted tinyint(4) DEFAULT '0' NOT NULL,
     reactions text,
+    shared_post_identifier varchar(255) NOT NULL default '',
+    is_shared_post tinyint(4) DEFAULT '0' NOT NULL,
     PRIMARY KEY (uid),
     UNIQUE KEY post_identifier (post_identifier),
     KEY channel (channel)
