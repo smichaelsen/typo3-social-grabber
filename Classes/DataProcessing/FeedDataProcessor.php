@@ -31,7 +31,7 @@ class FeedDataProcessor implements DataProcessorInterface
         $channelList = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
         $limit = (int) $this->getFlexFormValue($processedData['data']['pi_flexform'], 'limit');
         $filterTopics = $this->topicListToArray($this->getFlexFormValue($processedData['data']['pi_flexform'], 'filter_topics'));
-        $excludeSharedPosts = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'exclude_shared_posts');
+        $excludeSharedPosts = (bool) $this->getFlexFormValue($processedData['data']['pi_flexform'], 'exclude_shared_posts');
         if (empty($channelList)) {
             return $processedData;
         }
