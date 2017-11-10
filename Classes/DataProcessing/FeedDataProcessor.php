@@ -66,7 +66,7 @@ class FeedDataProcessor implements DataProcessorInterface
             $limit === 0 ? '' : $limit
         );
         while ($post = $this->getDatabaseConnection()->sql_fetch_assoc($res)) {
-            if ($post['reactions']) {
+            if (!empty($post['reactions'])) {
                 $post['reactions'] = json_decode($post['reactions'], true);
             }
             $posts[] = $post;
@@ -93,7 +93,7 @@ class FeedDataProcessor implements DataProcessorInterface
             /** @var TopicFilterableGrabberInterface $grabber */
             $grabber = new $channel['grabber_class'];
             if (!empty($channel['filter_topics'])) {
-                $filterTopics = array_merge($filterTopics, $this->topicListToArray($channel['filter_topics']));
+                $filterTopics = $this->arrayNotEmptyIntersect($filterTopics, $this->topicListToArray($channel['filter_topics']));
             }
             if (count($filterTopics) === 0) {
                 continue;
@@ -110,6 +110,25 @@ class FeedDataProcessor implements DataProcessorInterface
         }
         $where = ' AND ((' . join(') OR (', $conditions) . '))';
         return $where;
+    }
+
+    /**
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    protected function arrayNotEmptyIntersect($array1, $array2)
+    {
+        if (empty($array1) && empty($array2)) {
+            return [];
+        }
+        if (empty($array1)) {
+            return $array2;
+        }
+        if (empty($array2)) {
+            return $array1;
+        }
+        return array_intersect($array1, $array2);
     }
 
     /**
@@ -134,6 +153,11 @@ class FeedDataProcessor implements DataProcessorInterface
         return $topics;
     }
 
+    /**
+     * @param string $flexFormContent
+     * @param string $fieldName
+     * @return string|null
+     */
     protected function getFlexFormValue($flexFormContent, $fieldName)
     {
         $data = GeneralUtility::makeInstance(FlexFormService::class)->convertFlexFormContentToArray($flexFormContent);
