@@ -3,6 +3,7 @@
   "type": "typo3-cms-extension",
   "require": {
     "abraham/twitteroauth": "^0.7.4",
+    "nojimage/twitter-text-php": "^1.14.2",
     "facebook/graph-sdk": "^5.6.1",
     "fguillot/picofeed": "^0.1.25"
   },
