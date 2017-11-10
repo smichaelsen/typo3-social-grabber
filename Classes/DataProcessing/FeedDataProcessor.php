@@ -29,45 +29,51 @@ class FeedDataProcessor implements DataProcessorInterface
         array $processedData
     ) {
         $channelList = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
-        $limit = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'limit');
+        $limit = (int) $this->getFlexFormValue($processedData['data']['pi_flexform'], 'limit');
         $filterTopics = $this->topicListToArray($this->getFlexFormValue($processedData['data']['pi_flexform'], 'filter_topics'));
         if (empty($channelList)) {
             return $processedData;
         }
         $channelIds = GeneralUtility::intExplode(',', $channelList);
         if (count($channelIds) > 0) {
-            $posts = [];
-            $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
-                'uid, grabber_class, filter_topics',
-                'tx_socialgrabber_channel',
-                sprintf(
-                    'tx_socialgrabber_channel.uid IN (%s)',
-                    join(',', $channelIds)
-                )
-            );
-            $res = $this->getDatabaseConnection()->exec_SELECTquery(
-                'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
-                'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
-                sprintf(
-                    'tx_socialgrabber_domain_model_post.channel IN (%s)%s%s',
-                    join(',', $channelIds),
-                    $this->getFilterTopicsWhereStatement($filterTopics, $channels),
-                    $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post')
-                ),
-                '',
-                'publication_date DESC',
-                $limit
-            );
-            while ($post = $this->getDatabaseConnection()->sql_fetch_assoc($res)) {
-                if ($post['reactions']) {
-                    $post['reactions'] = json_decode($post['reactions'], true);
-                }
-                $posts[] = $post;
-            }
-            $processedData['posts'] = $posts;
+            $processedData['posts'] = $this->loadPosts($channelIds, $limit, $filterTopics);
         }
         return $processedData;
     }
+
+    protected function loadPosts(array $channelIds, int $limit, array $filterTopics): array
+    {
+        $posts = [];
+        $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
+            'uid, grabber_class, filter_topics',
+            'tx_socialgrabber_channel',
+            sprintf(
+                'tx_socialgrabber_channel.uid IN (%s)',
+                join(',', $channelIds)
+            )
+        );
+        $res = $this->getDatabaseConnection()->exec_SELECTquery(
+            'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
+            'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
+            sprintf(
+                'tx_socialgrabber_domain_model_post.channel IN (%s)%s%s',
+                join(',', $channelIds),
+                $this->getFilterTopicsWhereStatement($filterTopics, $channels),
+                $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post')
+            ),
+            '',
+            'publication_date DESC',
+            $limit === 0 ? '' : $limit
+        );
+        while ($post = $this->getDatabaseConnection()->sql_fetch_assoc($res)) {
+            if ($post['reactions']) {
+                $post['reactions'] = json_decode($post['reactions'], true);
+            }
+            $posts[] = $post;
+        }
+        return $posts;
+    }
+
 
     /**
      * @param array $filterTopics

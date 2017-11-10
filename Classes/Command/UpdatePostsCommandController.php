@@ -4,7 +4,9 @@ namespace Smichaelsen\SocialGrabber\Command;
 
 use Smichaelsen\SocialGrabber\Grabber\GrabberInterface;
 use Smichaelsen\SocialGrabber\Grabber\UpdatablePostsGrabberInterface;
+use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class UpdatePostsCommandController extends AbstractCommandController
 {
@@ -13,21 +15,32 @@ class UpdatePostsCommandController extends AbstractCommandController
     {
         $this->initialize();
         $channels = $this->loadChannels();
+        $flushCache = false;;
         foreach ($channels as $channel) {
-            $this->updatePostsOfChannel($channel);
+            $updatedPosts = $this->updatePostsOfChannel($channel);
+            if ($updatedPosts > 0) {
+                $flushCache = true;
+            }
+        }
+        if ($flushCache) {
+            $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
+            if ($cacheManager->hasCache('vhs_main')) {
+                $cacheManager->getCache('vhs_main')->remove('tx_socialgrabber_feed');
+            }
         }
     }
 
     /**
      * @param array $channel
+     * @return int Number of updated posts
      */
-    protected function updatePostsOfChannel($channel)
+    protected function updatePostsOfChannel(array $channel)
     {
         /** @var GrabberInterface|UpdatablePostsGrabberInterface $grabber */
         $grabber = new $channel['grabber_class'];
         $grabber->setExtensionConfiguration($this->extensionConfiguration);
         if (!$grabber instanceof UpdatablePostsGrabberInterface) {
-            return;
+            return 0;
         }
         $posts = $this->getDatabaseConnection()->exec_SELECTquery(
             'uid, publication_date, post_identifier',
@@ -62,5 +75,6 @@ class UpdatePostsCommandController extends AbstractCommandController
                 );
             }
         }
+        return count($updatedPosts);
     }
 }

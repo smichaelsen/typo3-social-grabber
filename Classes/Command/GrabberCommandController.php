@@ -4,7 +4,9 @@ namespace Smichaelsen\SocialGrabber\Command;
 
 use Smichaelsen\SocialGrabber\Grabber\GrabberInterface;
 use Smichaelsen\SocialGrabber\Grabber\HttpCachableGrabberInterface;
+use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class GrabberCommandController extends AbstractCommandController
 {
@@ -20,6 +22,7 @@ class GrabberCommandController extends AbstractCommandController
         if ($error) {
             throw new \Exception('Couldn\'t load channels: ' . $error);
         }
+        $flushCache = false;
         foreach ($channels as $channel) {
             if (!class_exists($channel['grabber_class'])) {
                 throw new \Exception('Grabber class "' . $channel['grabber_class'] . '" could not be loaded.', 1456736073);
@@ -59,11 +62,18 @@ class GrabberCommandController extends AbstractCommandController
                 if ($error) {
                     throw new \Exception('Error while inserting new posts: ' . $error, 1467270735);
                 }
+                $flushCache = true;
             }
             if (count($inserts) > 0) {
                 $this->addFlashMessage(get_class($grabber), 'Grabbed ' . count($inserts) . ' posts.', FlashMessage::OK);
             } else {
                 $this->addFlashMessage(get_class($grabber), 'No new posts.', FlashMessage::INFO);
+            }
+        }
+        if ($flushCache) {
+            $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
+            if ($cacheManager->hasCache('vhs_main')) {
+                $cacheManager->getCache('vhs_main')->remove('tx_socialgrabber_feed');
             }
         }
     }
