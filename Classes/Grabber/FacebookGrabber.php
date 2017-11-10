@@ -107,11 +107,10 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
         usort($tagReplacements, function ($a, $b) {
             return ($b['start'] - $a['start']);
         });
-        $message = utf8_decode($message);
         foreach ($tagReplacements as $entityReplacement) {
-            $message = substr_replace($message, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - $entityReplacement['start']);
+            $message = self::mb_substr_replace($message, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - 1);
         }
-        return utf8_encode($message);
+        return $message;
     }
 
     /**
@@ -168,5 +167,19 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
             return '';
         }
         return ' AND (' . join(' OR ', $topicStatements) . ')';
+    }
+
+    /**
+     * See http://php.net/manual/de/ref.mbstring.php#94220
+     *
+     * @param string $input
+     * @param string $replace
+     * @param int $posOpen
+     * @param int $posClose
+     * @return string
+     */
+    protected static function mb_substr_replace($input, $replace, $posOpen, $posClose)
+    {
+        return mb_substr($input, 0, $posOpen) . $replace . mb_substr($input, $posClose + 1);
     }
 }
