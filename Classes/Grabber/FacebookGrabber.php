@@ -136,10 +136,18 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
                 $post['post_identifier']
             );
             $response = $this->getFacebookConnection()->get($endpoint);
+            $likeCount = $response->getDecodedBody()['summary']['total_count'];
+            $endpoint = sprintf(
+                '/%s/comments?summary=1',
+                $post['post_identifier']
+            );
+            $response = $this->getFacebookConnection()->get($endpoint);
+            $commentCount = $response->getDecodedBody()['summary']['total_count'];
             $updatedPosts[] = [
                 'post_identifier' => $post['post_identifier'],
                 'reactions' => json_encode([
-                    'like_count' => $response->getDecodedBody()['summary']['total_count'],
+                    'comment_count' => $commentCount,
+                    'like_count' => $likeCount,
                 ]),
             ];
         }
