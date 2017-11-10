@@ -9,7 +9,7 @@ This extension has to be installed via composer to load its dependencies.
 ````
 {
   "require": {
-    "smichaelsen/social-grabber": "^2.0.2",
+    "smichaelsen/social-grabber": "^2.2.0",
   }
 }
 ````
