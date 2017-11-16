@@ -24,7 +24,7 @@ CREATE TABLE tx_socialgrabber_domain_model_post (
     publication_date int(11) DEFAULT '0' NOT NULL,
     url varchar(2083) NOT NULL default '',
     title varchar(255) NOT NULL default '',
-    teaser varchar(2323) default NULL,
+    teaser blob,
     author varchar(255) default NULL,
     author_image_url text,
     author_url varchar(2083) default NULL,
