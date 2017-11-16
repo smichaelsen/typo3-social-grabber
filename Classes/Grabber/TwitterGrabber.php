@@ -28,6 +28,7 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
     {
         $fields = [
             'screen_name' => $channel['url'],
+            'tweet_mode' => 'extended',
         ];
         if ($channel['last_post_identifier']) {
             $fields['since_id'] = $channel['last_post_identifier'];
@@ -70,7 +71,7 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
         $post = [
             'post_identifier' => $tweet->id,
             'publication_date' => strtotime($tweet->created_at),
-            'teaser' => TwitterEntityReplacer::replaceEntities($tweet->text, $tweet->entities),
+            'teaser' => TwitterEntityReplacer::replaceEntities($tweet->full_text, $tweet->entities),
             'author' => $tweet->user->name,
             'author_url' => $tweet->user->url,
             'author_image_url' => $tweet->user->profile_image_url_https,
