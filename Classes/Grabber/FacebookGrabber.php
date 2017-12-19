@@ -36,9 +36,29 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
     }
 
     /**
+     * @param string $message
+     * @return string
+     */
+    protected function replaceHashtags($message)
+    {
+        preg_match_all("/#[^ ]*/", $message, $result, PREG_PATTERN_ORDER);
+
+        foreach ($result[0] as $item) {
+            if (strpos($item, '</a>') !== false || strpos($item, '"') !== false) {
+                continue;
+            }
+            $link = '<a href="https://www.facebook.com/hashtag/' . str_replace('#', '', $item) . '" target="_blank">' . $item . '</a>';
+            $message = preg_replace('/' . $item . '/', $link, $message, 1);
+        }
+
+        return $message;
+    }
+
+    /**
      * @param string $pageName
      * @param int $since
      * @return \Facebook\FacebookResponse
+     * @throws \Facebook\Exceptions\FacebookSDKException
      */
     protected function getPagePosts($pageName, $since)
     {
@@ -110,6 +130,8 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
         foreach ($tagReplacements as $entityReplacement) {
             $message = self::mb_substr_replace($message, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - 1);
         }
+        $message = $this->replaceHashtags($message);
+        $message = autolink($message);
         return $message;
     }
 
@@ -125,6 +147,7 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
     /**
      * @param array $posts
      * @return array
+     * @throws \Facebook\Exceptions\FacebookSDKException
      */
     public function updatePosts($posts)
     {
