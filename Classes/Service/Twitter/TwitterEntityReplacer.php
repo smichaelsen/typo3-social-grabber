@@ -1,6 +1,6 @@
 <?php
 
-namespace Smichaelsen\SocialGrabber\Service;
+namespace Smichaelsen\SocialGrabber\Service\Twitter;
 
 class TwitterEntityReplacer
 {

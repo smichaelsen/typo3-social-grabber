@@ -3,7 +3,7 @@
 namespace Smichaelsen\SocialGrabber\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Smichaelsen\SocialGrabber\Service\TwitterEntityReplacer;
+use Smichaelsen\SocialGrabber\Service\Twitter\TwitterEntityReplacer;
 
 class TwitterEntityReplacerTest extends TestCase
 {

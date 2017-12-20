@@ -4,6 +4,7 @@ namespace Smichaelsen\SocialGrabber\Grabber;
 use PicoFeed\Parser\Item;
 use PicoFeed\Reader\Reader;
 use PicoFeed\Reader\UnsupportedFeedFormatException;
+use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
 
 /**
  * You can use this grabber directly if you have only one rss source to grab.
@@ -12,10 +13,7 @@ use PicoFeed\Reader\UnsupportedFeedFormatException;
 class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
 {
 
-    /**
-     * @var array
-     */
-    protected $extensionConfiguration;
+    use ExtensionsConfigurationSettable;
 
     /**
      * @var string
@@ -91,14 +89,5 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
     public function setLastModified($lastModified)
     {
         $this->lastModified = $lastModified;
-    }
-
-    /**
-     * @param array $extensionConfiguration
-     * @return void
-     */
-    public function setExtensionConfiguration($extensionConfiguration)
-    {
-        $this->extensionConfiguration = $extensionConfiguration;
     }
 }
