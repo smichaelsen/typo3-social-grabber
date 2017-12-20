@@ -25,9 +25,31 @@ class InstagramApiClient extends Client implements SingletonInterface
                 'apiKey' => $extensionConfiguration['instagram.']['client_id'],
                 'apiSecret' => $extensionConfiguration['instagram.']['client_secret'],
                 'apiCallback' => GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST') . '?eID=tx_socialgrabber_instagramoauth&requestToken=' . InstagramOAuth::getRequestToken(),
+                'scope' => ['public_content'],
             ];
         }
         parent::__construct($config);
+    }
+
+    /**
+     * @param string $username
+     * @return int
+     */
+    public function getIdForUsername($username)
+    {
+        $url = sprintf(
+            'https://www.instagram.com/%s/?__a=1',
+            $username
+        );
+        $headerData = ['Accept: application/json'];
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headerData);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $data = json_decode(curl_exec($ch));
+        return (int) $data->user->id;
     }
 
 }

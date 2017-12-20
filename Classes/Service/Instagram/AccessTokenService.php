@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Service\Instagram;
 
 use TYPO3\CMS\Core\Registry;
