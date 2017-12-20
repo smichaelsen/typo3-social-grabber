@@ -52,4 +52,22 @@ class InstagramApiClient extends Client implements SingletonInterface
         return (int) $data->user->id;
     }
 
+    /**
+     * @todo: Seems like this is not working. The min_id parameter is ignored by instagram. I filed a bug report. Probably we need to build a workaround on our side.
+     * @param $userId
+     * @param $sincePostIdentifier
+     * @return mixed
+     * @throws \Andreyco\Instagram\Exception\AuthException
+     * @throws \Andreyco\Instagram\Exception\CurlException
+     * @throws \Andreyco\Instagram\Exception\InvalidParameterException
+     */
+    public function getUserMediaSince($userId, $sincePostIdentifier = null)
+    {
+        $options = [];
+        if ($sincePostIdentifier !== null) {
+            $options['min_id'] = $sincePostIdentifier;
+        }
+        return $this->_makeCall('users/' . $userId . '/media/recent', $options);
+    }
+
 }

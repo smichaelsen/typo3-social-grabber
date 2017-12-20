@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Eid;
 
 use Psr\Http\Message\ResponseInterface;
@@ -50,5 +51,4 @@ class InstagramOAuth
         }
         return hash('sha256', $beUser->user['uid'] . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey']);
     }
-
 }

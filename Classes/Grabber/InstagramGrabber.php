@@ -2,14 +2,13 @@
 
 namespace Smichaelsen\SocialGrabber\Grabber;
 
-use Andreyco\Instagram\Client;
 use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
 use Smichaelsen\SocialGrabber\Service\Instagram\AccessTokenService;
 use Smichaelsen\SocialGrabber\Service\Instagram\InstagramApiClient;
 use Smichaelsen\SocialGrabber\Service\Instagram\UserIdService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterface
+class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterface, TopicFilterableGrabberInterface
 {
 
     use ExtensionsConfigurationSettable;
@@ -17,6 +16,9 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
     /**
      * @param array $channel
      * @return array
+     * @throws \Andreyco\Instagram\Exception\AuthException
+     * @throws \Andreyco\Instagram\Exception\CurlException
+     * @throws \Andreyco\Instagram\Exception\InvalidParameterException
      */
     public function grabData($channel)
     {
@@ -25,7 +27,7 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
         $data = [
             'posts' => []
         ];
-        $posts = $instagramConnection->getUserMedia(UserIdService::getIdForUsername($channel['url']));
+        $posts = $instagramConnection->getUserMediaSince(UserIdService::getIdForUsername($channel['url']), $channel['last_post_identifier']);
         foreach ($posts->data as $post) {
             $postRecord = [
                 'post_identifier' => $post->id,
@@ -43,7 +45,11 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
                     'comment_count' => $post->comments->count,
                     'favorite_count' => $post->likes->count,
                 ]),
+                'media_url' => '',
             ];
+            if (!empty($post->videos)) {
+                $postRecord['media_url'] = json_encode([$post->videos->standard_resolution->url]);
+            }
             $data['posts'][] = $postRecord;
         }
         return $data;
@@ -72,13 +78,33 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
     }
 
     /**
-     * @param $message
+     * @param string $message
      * @return string
      */
     protected function replaceTags($message)
     {
+        // replace hashtags
         $message = preg_replace('/(?:^|\s)#([äöüÄÖÜß0-9a-zA-Z]+)/', ' <a href="https://www.instagram.com/explore/tags/$1/" target="_blank">#$1</a>', $message);
+        // replace user mentions
         $message = preg_replace('/(?:^|\s)@(\w+)/', ' <a href="https://www.instagram.com/$1/" target="_blank">@$1</a>', $message);
+        // auto link urls
+        $message = autolink($message);
         return $message;
+    }
+
+    /**
+     * @param array $topics
+     * @return string
+     */
+    public function getTopicFilterWhereStatement($topics)
+    {
+        $topicStatements = [];
+        foreach ($topics as $topic) {
+            $topicStatements[] = 'LOWER(tx_socialgrabber_domain_model_post.teaser) LIKE "%#' . strtolower($topic) . '%"';
+        }
+        if (count($topicStatements) === 0) {
+            return '';
+        }
+        return ' AND (' . join(' OR ', $topicStatements) . ')';
     }
 }
