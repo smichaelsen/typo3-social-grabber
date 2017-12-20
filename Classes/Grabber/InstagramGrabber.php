@@ -55,7 +55,20 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
      */
     public function updatePosts($posts)
     {
-        // TODO: Implement updatePosts() method.
+        $instagramConnection = GeneralUtility::makeInstance(InstagramApiClient::class);
+        $instagramConnection->setAccessToken(GeneralUtility::makeInstance(AccessTokenService::class)->getAccessToken());
+        $updatedPosts = [];
+        foreach ($posts as $post) {
+            $response = $instagramConnection->getMedia($post['post_identifier']);
+            $updatedPosts[] = [
+                'post_identifier' => $post['post_identifier'],
+                'reactions' => json_encode([
+                    'comment_count' => $response->data->comments->count,
+                    'favorite_count' => $response->data->likes->count,
+                ]),
+            ];
+        }
+        return $updatedPosts;
     }
 
     /**
