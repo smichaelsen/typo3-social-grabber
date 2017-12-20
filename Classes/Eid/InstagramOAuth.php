@@ -14,10 +14,22 @@ class InstagramOAuth
 
     public function processRequest(ServerRequestInterface $request, ResponseInterface $response)
     {
+        $requestToken = $request->getQueryParams()['requestToken'];
+        try {
+            if ($requestToken !== self::getRequestToken()) {
+                $response->withStatus(401);
+                $response->getBody()->write('invalid request token');
+                return $response;
+            }
+        } catch (\Exception $e) {
+            $response->withStatus(401);
+            $response->getBody()->write('invalid request token');
+            return $response;
+        }
         $code = $request->getQueryParams()['code'];
         $data = GeneralUtility::makeInstance(InstagramApiClient::class)->getOAuthToken($code);
         GeneralUtility::makeInstance(AccessTokenService::class)->setAccessToken($data->access_token);
-        $response->getBody()->write('hodor');
+        $response->getBody()->write('Authentication successful. You may close this window.');
         return $response;
     }
 
