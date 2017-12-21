@@ -2,6 +2,8 @@
 
 Fetches posts from Facebook Pages, Twitter and Instagram accounts and RSS feeds to display them on your website.
 
+Tested with TYPO3 7.6 and 8.7.
+
 ## How to set up:
 
 This extension has to be installed via composer to load its dependencies.
