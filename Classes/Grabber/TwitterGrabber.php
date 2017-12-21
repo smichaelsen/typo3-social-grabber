@@ -3,7 +3,8 @@
 namespace Smichaelsen\SocialGrabber\Grabber;
 
 use Abraham\TwitterOAuth\TwitterOAuth;
-use Smichaelsen\SocialGrabber\Service\TwitterEntityReplacer;
+use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
+use Smichaelsen\SocialGrabber\Service\Twitter\TwitterEntityReplacer;
 use TYPO3\CMS\Core\Database\DatabaseConnection;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
@@ -12,13 +13,10 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterface, UpdatablePostsGrabberInterface
 {
 
+    use ExtensionsConfigurationSettable;
+
     // Twitter allows lookup for 100 tweets in one request
     const TWITTER_STATUS_LOOKUP_LIMIT = 100;
-
-    /**
-     * @var array
-     */
-    protected $extensionConfiguration;
 
     /**
      * @param array $channel
@@ -128,15 +126,6 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
     protected function getDatabaseConnection()
     {
         return $GLOBALS['TYPO3_DB'];
-    }
-
-    /**
-     * @param array $extensionConfiguration
-     * @return void
-     */
-    public function setExtensionConfiguration($extensionConfiguration)
-    {
-        $this->extensionConfiguration = $extensionConfiguration;
     }
 
     /**

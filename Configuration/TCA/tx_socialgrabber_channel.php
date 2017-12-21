@@ -33,6 +33,7 @@ return [
                 'type' => 'select',
                 'renderType' => 'selectSingle',
                 'items' => [
+                    ['Instagram', \Smichaelsen\SocialGrabber\Grabber\InstagramGrabber::class],
                     ['Facebook', \Smichaelsen\SocialGrabber\Grabber\FacebookGrabber::class],
                     ['RSS', \Smichaelsen\SocialGrabber\Grabber\RssGrabber::class],
                     ['Twitter', \Smichaelsen\SocialGrabber\Grabber\TwitterGrabber::class],

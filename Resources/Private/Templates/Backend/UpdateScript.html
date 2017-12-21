@@ -1,0 +1,29 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">Instagram</h3>
+	</div>
+	<div class="panel-body">
+		<f:if condition="{instagramConfiguration}">
+			<f:then>
+				<p>Client ID: {instagramConfiguration.client_id}</p>
+				<p>
+					<f:if condition="{accesstokenService.accesstokenAvailable}">
+						<f:then>
+							Access token is set.
+						</f:then>
+						<f:else>
+							Access token is not set yet.
+								</p><p><f:link.external uri="{loginUrl}" target="_blank" class="btn btn-primary btn-lg">Get Access Token</f:link.external>
+						</f:else>
+					</f:if>
+				</p>
+			</f:then>
+			<f:else>
+				Instagram Application is not configured. Register one at
+				<f:link.external uri="https://www.instagram.com/developer/" target="_blank" additionalAttributes="{rel:'noopener noreferrer'}">www.instagram.com/developer</f:link.external>
+				and provide Cliend ID and Client Secret in the extension configuration.
+			</f:else>
+		</f:if>
+
+	</div>
+</div>

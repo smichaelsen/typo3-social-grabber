@@ -29,6 +29,7 @@ CREATE TABLE tx_socialgrabber_domain_model_post (
     author_image_url text,
     author_url varchar(2083) default NULL,
     image_url text,
+    media_url text,
     deleted tinyint(4) DEFAULT '0' NOT NULL,
     reactions text,
     shared_post_identifier varchar(255) NOT NULL default '',

@@ -3,14 +3,12 @@
 namespace Smichaelsen\SocialGrabber\Grabber;
 
 use Facebook\Facebook;
+use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
 
 class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterface, UpdatablePostsGrabberInterface
 {
 
-    /**
-     * @var array
-     */
-    protected $extensionConfiguration;
+    use ExtensionsConfigurationSettable;
 
     /**
      * @param array $channel
@@ -133,15 +131,6 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
         $message = $this->replaceHashtags($message);
         $message = autolink($message);
         return $message;
-    }
-
-    /**
-     * @param array $extensionConfiguration
-     * @return void
-     */
-    public function setExtensionConfiguration($extensionConfiguration)
-    {
-        $this->extensionConfiguration = $extensionConfiguration;
     }
 
     /**
