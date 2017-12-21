@@ -7,11 +7,11 @@ $EM_CONF['social_grabber'] = [
     'state' => 'stable',
     'author' => 'Sebastian Michaelsen',
     'author_email' => '',
-    'author_company' => 'app-zap',
+    'author_company' => 'Maschinenraum UG',
     'version' => '1.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '7.6.2-7.99.99',
+            'typo3' => '7.6.2-8.7.99',
         ],
     ],
 ];
