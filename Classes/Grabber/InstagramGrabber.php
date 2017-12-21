@@ -27,8 +27,14 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
         $data = [
             'posts' => []
         ];
-        $posts = $instagramConnection->getUserMediaSince(UserIdService::getIdForUsername($channel['url']), $channel['last_post_identifier']);
+        $userId = UserIdService::getIdForUsername($channel['url']);
+        // this method seems broken on instagram's side: It ignores the "since" (min_id) parameter, that's why we have a workround inside this function
+        $posts = $instagramConnection->getUserMediaSince($userId, $channel['last_post_identifier']);
         foreach ($posts->data as $post) {
+            // this is the workaround for the "min_id" bug:
+            if ($channel['last_post_date'] >= $post->created_time) {
+                continue;
+            }
             $postRecord = [
                 'post_identifier' => $post->id,
                 'publication_date' => $post->created_time,
