@@ -19,6 +19,7 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
      * @throws \Andreyco\Instagram\Exception\AuthException
      * @throws \Andreyco\Instagram\Exception\CurlException
      * @throws \Andreyco\Instagram\Exception\InvalidParameterException
+     * @throws \Exception
      */
     public function grabData($channel)
     {
@@ -30,6 +31,9 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
         $userId = UserIdService::getIdForUsername($channel['url']);
         // this method seems broken on instagram's side: It ignores the "since" (min_id) parameter, that's why we have a workround inside this function
         $posts = $instagramConnection->getUserMediaSince($userId, $channel['last_post_identifier']);
+        if (isset($posts->meta->code) && $posts->meta->code === 400) {
+            throw new \Exception('Error while grabbing instagram posts: ' . $posts->meta->error_message);
+        }
         foreach ($posts->data as $post) {
             // this is the workaround for the "min_id" bug:
             if ($channel['last_post_date'] >= $post->created_time) {
