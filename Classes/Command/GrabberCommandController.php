@@ -65,15 +65,15 @@ class GrabberCommandController extends AbstractCommandController
                 $flushCache = true;
             }
             if (count($inserts) > 0) {
-                $this->addFlashMessage(get_class($grabber), 'Grabbed ' . count($inserts) . ' posts.', FlashMessage::OK);
+                $this->addFlashMessage(get_class($grabber), $channel['url'] . ': Grabbed ' . count($inserts) . ' posts.', FlashMessage::OK);
             } else {
-                $this->addFlashMessage(get_class($grabber), 'No new posts.', FlashMessage::INFO);
+                $this->addFlashMessage(get_class($grabber), $channel['url'] . ': No new posts.', FlashMessage::INFO);
             }
         }
         if ($flushCache) {
             $cacheManager = GeneralUtility::makeInstance(CacheManager::class);
             if ($cacheManager->hasCache('vhs_main')) {
-                $cacheManager->getCache('vhs_main')->remove('tx_socialgrabber_feed');
+                $cacheManager->getCache('vhs_main')->flush();
             }
         }
     }
