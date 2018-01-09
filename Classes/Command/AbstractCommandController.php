@@ -38,7 +38,7 @@ abstract class AbstractCommandController extends CommandController
     protected function determineUpdateProbability($publication_date)
     {
         $daysSincePublication = max(1, ($GLOBALS['EXEC_TIME'] - $publication_date) / (24*60*60));
-        return (float) 1 / pow($daysSincePublication, 0.95);
+        return (float) 1 / pow($daysSincePublication, 0.99);
     }
 
     /**

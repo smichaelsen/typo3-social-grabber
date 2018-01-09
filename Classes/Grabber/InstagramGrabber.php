@@ -76,13 +76,17 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
         $updatedPosts = [];
         foreach ($posts as $post) {
             $response = $instagramConnection->getMedia($post['post_identifier']);
-            $updatedPosts[] = [
+            $updatedPost = [
                 'post_identifier' => $post['post_identifier'],
                 'reactions' => json_encode([
                     'comment_count' => $response->data->comments->count,
                     'favorite_count' => $response->data->likes->count,
                 ]),
             ];
+            if (!empty($response->data->videos)) {
+                $updatedPost['media_url'] = json_encode([$response->data->videos->standard_resolution->url]);
+            }
+            $updatedPosts[] = $updatedPost;
         }
         return $updatedPosts;
     }
