@@ -38,7 +38,19 @@ abstract class AbstractCommandController extends CommandController
     protected function determineUpdateProbability($publication_date)
     {
         $daysSincePublication = max(1, ($GLOBALS['EXEC_TIME'] - $publication_date) / (24*60*60));
-        return (float) 1 / pow($daysSincePublication, 0.99);
+        $exponent = 0.9;
+        // The probability decreases with each day the publication day has passed.
+        // For $exponent 0.9 that means the following update probabilities:
+        // 1 day: 100%
+        // 2 days: 54%
+        // 5 days: 23%
+        // 10 days: 13%
+        // 100 days: 2%
+        // 365 days: 0.5%
+        // 730 days: 0.3%
+        // I.e. a post that is one year old has a 1/200 chance to get updated within one run of the updatePostsCommand.
+        // see the graph for this function: https://www.desmos.com/calculator/n0ua1nioff
+        return (float) 1 / pow($daysSincePublication, $exponent);
     }
 
     /**
