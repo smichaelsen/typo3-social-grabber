@@ -19,7 +19,8 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
         $data = [
             'posts' => []
         ];
-        $posts = $this->getPagePosts($channel['url'], $channel['last_post_date']);
+        $pageSlug = rtrim(str_replace('https://www.facebook.com/', '', $channel['url']), '/');
+        $posts = $this->getPagePosts($pageSlug, $channel['last_post_date']);
         foreach ($posts->getDecodedBody()['data'] as $post) {
             $postRecord = [
                 'post_identifier' => $post['id'],
