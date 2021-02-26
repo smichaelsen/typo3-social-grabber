@@ -6,22 +6,14 @@ use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
 use Smichaelsen\SocialGrabber\Service\Instagram\AccessTokenService;
 use Smichaelsen\SocialGrabber\Service\Instagram\InstagramApiClient;
 use Smichaelsen\SocialGrabber\Service\Instagram\UserIdService;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterface, TopicFilterableGrabberInterface
 {
-
     use ExtensionsConfigurationSettable;
 
-    /**
-     * @param array $channel
-     * @return array
-     * @throws \Andreyco\Instagram\Exception\AuthException
-     * @throws \Andreyco\Instagram\Exception\CurlException
-     * @throws \Andreyco\Instagram\Exception\InvalidParameterException
-     * @throws \Exception
-     */
-    public function grabData($channel)
+    public function grabData(array $channel): array
     {
         $instagramConnection = GeneralUtility::makeInstance(InstagramApiClient::class);
         $instagramConnection->setAccessToken(GeneralUtility::makeInstance(AccessTokenService::class)->getAccessToken());
@@ -106,11 +98,7 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
         return $message;
     }
 
-    /**
-     * @param array $topics
-     * @return string
-     */
-    public function getTopicFilterWhereStatement($topics)
+    public function getTopicFilterWhereStatement(array $topics, QueryBuilder $query): string
     {
         $topicStatements = [];
         foreach ($topics as $topic) {

@@ -5,7 +5,7 @@ namespace Smichaelsen\SocialGrabber\Grabber;
 use Abraham\TwitterOAuth\TwitterOAuth;
 use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
 use Smichaelsen\SocialGrabber\Service\Twitter\TwitterEntityReplacer;
-use TYPO3\CMS\Core\Database\DatabaseConnection;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -18,11 +18,7 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
     // Twitter allows lookup for 100 tweets in one request
     const TWITTER_STATUS_LOOKUP_LIMIT = 100;
 
-    /**
-     * @param array $channel
-     * @return array
-     */
-    public function grabData($channel)
+    public function grabData(array $channel): array
     {
         $fields = [
             'screen_name' => $channel['url'],
@@ -114,18 +110,10 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                 $this->extensionConfiguration['consumer_key'],
                 $this->extensionConfiguration['consumer_secret'],
                 $this->extensionConfiguration['oauth_access_token'],
-                $this->extensionConfiguration['oauth_access_token_secret']
+                $this->extensionConfiguration['oauth_access_token_secret'],
             );
         }
         return $twitter;
-    }
-
-    /**
-     * @return DatabaseConnection
-     */
-    protected function getDatabaseConnection()
-    {
-        return $GLOBALS['TYPO3_DB'];
     }
 
     /**
@@ -167,19 +155,20 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
         return $updatedPosts;
     }
 
-    /**
-     * @param array $topics
-     * @return string
-     */
-    public function getTopicFilterWhereStatement($topics)
+    public function getTopicFilterWhereStatement(array $topics, QueryBuilder $query): ?QueryBuilder
     {
         $topicStatements = [];
+        if (count($topics) === 0) {
+            return null;
+        }
+
         foreach ($topics as $topic) {
-            $topicStatements[] = 'LOWER(tx_socialgrabber_domain_model_post.teaser) LIKE "%>#' . strtolower($topic) . '<%"';
+            $topicStatements[] = $query->where($query->expr()->like('teaser', '>#' . strtolower($topic) . '<'));
         }
-        if (count($topicStatements) === 0) {
-            return '';
-        }
-        return ' AND (' . join(' OR ', $topicStatements) . ')';
+
+        $query = $query->orWhere($topicStatements);
+
+        return $query;
+        //return ' AND (' . join(' OR ', $topicStatements) . ')';
     }
 }

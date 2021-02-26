@@ -4,16 +4,27 @@ namespace Smichaelsen\SocialGrabber\Command;
 
 use Smichaelsen\SocialGrabber\Grabber\GrabberInterface;
 use Smichaelsen\SocialGrabber\Grabber\UpdatablePostsGrabberInterface;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class UpdatePostsCommandController extends AbstractCommandController
+class UpdatePostsCommand extends AbstractCommand
 {
-
-    public function updatePostsCommand()
+    protected function configure()
     {
-        $this->initialize();
+        $this->setDescription('Update posts from the social media streams');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $this->updatePosts();
+        return 0;
+    }
+
+    public function updatePosts()
+    {
         $channels = $this->loadChannels();
         $flushCache = false;;
         foreach ($channels as $channel) {
@@ -30,11 +41,7 @@ class UpdatePostsCommandController extends AbstractCommandController
         }
     }
 
-    /**
-     * @param array $channel
-     * @return int Number of updated posts
-     */
-    protected function updatePostsOfChannel(array $channel)
+    protected function updatePostsOfChannel(array $channel): int
     {
         /** @var GrabberInterface|UpdatablePostsGrabberInterface $grabber */
         $grabber = new $channel['grabber_class'];
@@ -42,12 +49,14 @@ class UpdatePostsCommandController extends AbstractCommandController
         if (!$grabber instanceof UpdatablePostsGrabberInterface) {
             return 0;
         }
-        $posts = $this->getDatabaseConnection()->exec_SELECTquery(
-            'uid, publication_date, post_identifier',
+
+        $connection = $this->getConnectionForTable('tx_socialgrabber_domain_model_post');
+        $posts = $connection->select(
+            ['uid', 'publication_date', 'post_identifier'],
             'tx_socialgrabber_domain_model_post',
-            'deleted = 0 AND channel = ' . $channel['uid'],
-            '',
-            'publication_date DESC'
+            ['channel' => $channel['uid']],
+            [],
+            ['publication_date' => 'DESC']
         );
         $postsToUpdate = [];
         foreach ($posts as $post) {
@@ -63,15 +72,17 @@ class UpdatePostsCommandController extends AbstractCommandController
         $updatedPosts = $grabber->updatePosts($postsToUpdate);
         foreach ($updatedPosts as $postIdentifier => $updatedPost) {
             if ($updatedPost === '__DELETED__') {
-                $this->getDatabaseConnection()->DELETEquery(
+                $connection = $this->getConnectionForTable('tx_socialgrabber_domain_model_post');
+                $connection->delete(
                     'tx_socialgrabber_domain_model_post',
-                    'post_identifier = ' . $this->getDatabaseConnection()->fullQuoteStr($postIdentifier, '')
+                    ['post_identifier' => $connection->quoteIdentifier($postIdentifier)]
                 );
             } else {
-                $this->getDatabaseConnection()->exec_UPDATEquery(
+                $connection = $this->getConnectionForTable('tx_socialgrabber_domain_model_post');
+                $connection->update(
                     'tx_socialgrabber_domain_model_post',
-                    'post_identifier = ' . $this->getDatabaseConnection()->fullQuoteStr($updatedPost['post_identifier'], ''),
-                    $updatedPost
+                    $updatedPost,
+                    ['post_identifier' => $connection->quoteIdentifier($updatedPost['post_identifier'])]
                 );
             }
         }
