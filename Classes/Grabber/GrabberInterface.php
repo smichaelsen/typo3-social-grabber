@@ -3,17 +3,7 @@ namespace Smichaelsen\SocialGrabber\Grabber;
 
 interface GrabberInterface
 {
+    public function setExtensionConfiguration(array $extensionConfiguration): void;
 
-    /**
-     * @param array $extensionConfiguration
-     * @return void
-     */
-    public function setExtensionConfiguration($extensionConfiguration);
-
-    /**
-     * @param array $channel
-     * @return array
-     */
-    public function grabData($channel);
-
+    public function grabData(array $channel): array;
 }

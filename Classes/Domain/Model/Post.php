@@ -6,67 +6,46 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 class Post extends AbstractEntity
 {
 
-    /**
-     * @var string
-     */
-    protected $author;
+    protected string $author;
 
-    /**
-     * @var \DateTime
-     */
-    protected $publicationDate;
+    protected \DateTime $publicationDate;
 
     /**
      * @var string
      */
-    protected $teaser;
+    protected string $teaser;
 
     /**
      * @var string
      */
-    protected $title;
+    protected string $title;
 
     /**
      * @var string
      */
-    protected $url;
+    protected string $url;
 
-    /**
-     * @return string
-     */
-    public function getAuthor()
+    public function getAuthor(): string
     {
         return $this->author;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getPublicationDate()
+    public function getPublicationDate(): \DateTime
     {
         return $this->publicationDate;
     }
 
-    /**
-     * @return string
-     */
-    public function getTeaser()
+    public function getTeaser(): string
     {
         return $this->teaser;
     }
 
-    /**
-     * @return string
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    /**
-     * @return string
-     */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
