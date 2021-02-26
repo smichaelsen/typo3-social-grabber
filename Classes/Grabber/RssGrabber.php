@@ -25,12 +25,7 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
      */
     protected $lastModified;
 
-    /**
-     * @param array $channel
-     * @return array
-     * @throws \PicoFeed\Parser\MalformedXmlException
-     */
-    public function grabData($channel)
+    public function grabData(array $channel): array
     {
         $reader = new Reader();
         try {
