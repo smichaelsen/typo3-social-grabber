@@ -28,15 +28,7 @@
                             </config>
                         </TCEforms>
                     </limit>
-                    <filter_topics>
-                        <TCEforms>
-                            <label>Only output posts with the following topics/hashtags (comma separated)</label>
-                            <config>
-                                <type>input</type>
-                            </config>
-                        </TCEforms>
-                    </filter_topics>
-                        <exclude_shared_posts>
+                    <exclude_shared_posts>
                         <TCEforms>
                             <label>Exclude shared posts (retweets) from output</label>
                             <config>

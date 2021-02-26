@@ -1,5 +1,5 @@
 <?php
-if (!defined('TYPO3_MODE')) {
+if (!defined('TYPO3')) {
     die ('Access denied.');
 }
 
@@ -33,9 +33,8 @@ return [
                 'type' => 'select',
                 'renderType' => 'selectSingle',
                 'items' => [
-                    ['Instagram', \Smichaelsen\SocialGrabber\Grabber\InstagramGrabber::class],
-                    ['Facebook', \Smichaelsen\SocialGrabber\Grabber\FacebookGrabber::class],
-                    ['RSS', \Smichaelsen\SocialGrabber\Grabber\RssGrabber::class],
+                    //['Instagram', \Smichaelsen\SocialGrabber\Grabber\InstagramGrabber::class],
+                    //['Facebook', \Smichaelsen\SocialGrabber\Grabber\FacebookGrabber::class],
                     ['Twitter', \Smichaelsen\SocialGrabber\Grabber\TwitterGrabber::class],
                 ]
             ],

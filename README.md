@@ -1,6 +1,6 @@
 # TYPO3 Extension: Social Grabber
 
-Fetches posts from Facebook Pages, Twitter and Instagram accounts and RSS feeds to display them on your website.
+Fetches posts from Facebook Pages, Twitter and Instagram accounts to display them on your website.
 
 Tested with TYPO3 7.6 and 8.7.
 
@@ -39,7 +39,7 @@ Create a channel and grab posts:
 
 * Create a new channel record of the type "Instagram".
 * Place the username of the desired channel in the "URL" field (just the username, not the complete URL)
-* Run the scheduler task to fetch posts and optionally the one to update posts (updates the like and comment counts) 
+* Run the scheduler task to fetch posts and optionally the one to update posts (updates the like and comment counts)
 
 ## Semantic versioning and updates
 

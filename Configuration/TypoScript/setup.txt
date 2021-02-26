@@ -4,6 +4,9 @@ tt_content.list.20.tx_socialgrabber_feed {
     10 = EXT:social_grabber/Resources/Private/Templates
     20 = {$plugin.tx_socialgrabber.view.templateRootPath}
   }
+  partialRootPaths {
+    20 = {$plugin.tx_socialgrabber.view.partialRootPath}
+  }
 
   templateName = Feed
   dataProcessing {

@@ -5,7 +5,8 @@ namespace Smichaelsen\SocialGrabber\Grabber;
 use Abraham\TwitterOAuth\TwitterOAuth;
 use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
 use Smichaelsen\SocialGrabber\Service\Twitter\TwitterEntityReplacer;
-use TYPO3\CMS\Core\Database\DatabaseConnection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -18,15 +19,12 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
     // Twitter allows lookup for 100 tweets in one request
     const TWITTER_STATUS_LOOKUP_LIMIT = 100;
 
-    /**
-     * @param array $channel
-     * @return array
-     */
-    public function grabData($channel)
+    public function grabData(array $channel): array
     {
         $fields = [
             'screen_name' => $channel['url'],
             'tweet_mode' => 'extended',
+            'include_rts' => true,
         ];
         if ($channel['last_post_identifier']) {
             $fields['since_id'] = $channel['last_post_identifier'];
@@ -50,12 +48,16 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                 $isRetweet = !empty($tweet->retweeted_status);
                 if ($isRetweet) {
                     $retweetedPost = $this->createPostRecordFromTweet($tweet->retweeted_status);
+                    $retweetedPost['teaser'] = 'Julius Baer retweeted: ' . $retweetedPost['teaser'];
                     $retweetedPost['is_shared_post'] = '1';
                     $data['posts'][] = $retweetedPost;
                     $post['shared_post_identifier'] = $tweet->retweeted_status->id;
+                } else {
+                    $data['posts'][] = $post;
                 }
-                $data['posts'][] = $post;
             }
+
+            $data = $this->removeExistingTweets($data);
         }
 
         return $data;
@@ -114,18 +116,19 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                 $this->extensionConfiguration['consumer_key'],
                 $this->extensionConfiguration['consumer_secret'],
                 $this->extensionConfiguration['oauth_access_token'],
-                $this->extensionConfiguration['oauth_access_token_secret']
+                $this->extensionConfiguration['oauth_access_token_secret'],
             );
+
+            if (isset($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy']) && $GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] !== '') {
+                $urlParts = parse_url($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy']);
+                $twitter->setProxy([
+                    'CURLOPT_PROXY' => $urlParts['scheme'] . '://' . $urlParts['host'],
+                    'CURLOPT_PROXYUSERPWD' => '',
+                    'CURLOPT_PROXYPORT' => $urlParts['port'],
+                ]);
+            }
         }
         return $twitter;
-    }
-
-    /**
-     * @return DatabaseConnection
-     */
-    protected function getDatabaseConnection()
-    {
-        return $GLOBALS['TYPO3_DB'];
     }
 
     /**
@@ -167,19 +170,38 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
         return $updatedPosts;
     }
 
-    /**
-     * @param array $topics
-     * @return string
-     */
-    public function getTopicFilterWhereStatement($topics)
+    public function getTopicFilterWhereStatement(array $topics, QueryBuilder $query)
     {
         $topicStatements = [];
+        if (count($topics) === 0) {
+            return null;
+        }
+
         foreach ($topics as $topic) {
-            $topicStatements[] = 'LOWER(tx_socialgrabber_domain_model_post.teaser) LIKE "%>#' . strtolower($topic) . '<%"';
+            $topicStatements[] = $query->where($query->expr()->like('teaser', '>#' . strtolower($topic) . '<'));
         }
-        if (count($topicStatements) === 0) {
-            return '';
-        }
-        return ' AND (' . join(' OR ', $topicStatements) . ')';
+
+        $query = $query->orWhere($topicStatements);
+
+        return $query;
+        //return ' AND (' . join(' OR ', $topicStatements) . ')';
+    }
+
+    private function flatten(array $array): array
+    {
+        return iterator_to_array(
+             new \RecursiveIteratorIterator(new \RecursiveArrayIterator($array))
+        );
+    }
+
+    protected function removeExistingTweets(array $data): array
+    {
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('tx_socialgrabber_domain_model_post');
+        $existingTweets = $this->flatten($connection->select(['post_identifier'], 'tx_socialgrabber_domain_model_post')->fetchFirstColumn());
+        $data['posts'] = array_filter($data['posts'], function ($post) use ($existingTweets) {
+            return in_array($post['post_identifier'], $existingTweets) === false;
+        });
+
+        return $data;
     }
 }
