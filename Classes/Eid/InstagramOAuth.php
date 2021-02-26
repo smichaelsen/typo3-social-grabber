@@ -12,7 +12,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class InstagramOAuth
 {
-
     public function processRequest(ServerRequestInterface $request, ResponseInterface $response)
     {
         $requestToken = $request->getQueryParams()['requestToken'];

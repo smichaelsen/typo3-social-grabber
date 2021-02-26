@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
@@ -70,5 +71,4 @@ class Post extends AbstractEntity
     {
         return $this->url;
     }
-
 }

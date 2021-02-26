@@ -12,7 +12,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterface, UpdatablePostsGrabberInterface
 {
-
     use ExtensionsConfigurationSettable;
 
     // Twitter allows lookup for 100 tweets in one request
@@ -65,7 +64,8 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
      * @param \stdClass $tweet
      * @return array
      */
-    protected function createPostRecordFromTweet($tweet) {
+    protected function createPostRecordFromTweet($tweet)
+    {
         $post = [
             'post_identifier' => $tweet->id,
             'publication_date' => strtotime($tweet->created_at),
@@ -144,7 +144,7 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                 return $ids;
             });
             $parameters = [
-                'id' => join(',', $ids),
+                'id' => implode(',', $ids),
                 'include_entities' => false,
                 'trim_user' => true,
                 'map' => true,
@@ -180,6 +180,6 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
         if (count($topicStatements) === 0) {
             return '';
         }
-        return ' AND (' . join(' OR ', $topicStatements) . ')';
+        return ' AND (' . implode(' OR ', $topicStatements) . ')';
     }
 }

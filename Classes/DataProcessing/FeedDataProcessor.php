@@ -29,9 +29,9 @@ class FeedDataProcessor implements DataProcessorInterface
         array $processedData
     ) {
         $channelList = $this->getFlexFormValue($processedData['data']['pi_flexform'], 'channel');
-        $limit = (int) $this->getFlexFormValue($processedData['data']['pi_flexform'], 'limit');
+        $limit = (int)$this->getFlexFormValue($processedData['data']['pi_flexform'], 'limit');
         $filterTopics = $this->topicListToArray($this->getFlexFormValue($processedData['data']['pi_flexform'], 'filter_topics'));
-        $excludeSharedPosts = (bool) $this->getFlexFormValue($processedData['data']['pi_flexform'], 'exclude_shared_posts');
+        $excludeSharedPosts = (bool)$this->getFlexFormValue($processedData['data']['pi_flexform'], 'exclude_shared_posts');
         if (empty($channelList)) {
             return $processedData;
         }
@@ -50,13 +50,13 @@ class FeedDataProcessor implements DataProcessorInterface
             'tx_socialgrabber_channel',
             sprintf(
                 'tx_socialgrabber_channel.uid IN (%s)',
-                join(',', $channelIds)
+                implode(',', $channelIds)
             )
         );
         $conditions = [];
         $conditions[] = sprintf(
             'tx_socialgrabber_domain_model_post.channel IN (%s)',
-            join(',', $channelIds)
+            implode(',', $channelIds)
         );
         $filterStatement = $this->getFilterTopicsWhereStatement($filterTopics, $channels);
         if (!empty($filterStatement)) {
@@ -67,7 +67,7 @@ class FeedDataProcessor implements DataProcessorInterface
         }
         $conditions[] = 'is_shared_post = 0';
 
-        $where = join(' AND ', $conditions) . $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post');
+        $where = implode(' AND ', $conditions) . $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post');
 
         $res = $this->getDatabaseConnection()->exec_SELECTquery(
             'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
@@ -86,7 +86,6 @@ class FeedDataProcessor implements DataProcessorInterface
         return $posts;
     }
 
-
     /**
      * @param array $filterTopics
      * @param array $channels
@@ -103,7 +102,7 @@ class FeedDataProcessor implements DataProcessorInterface
                 continue;
             }
             /** @var TopicFilterableGrabberInterface $grabber */
-            $grabber = new $channel['grabber_class'];
+            $grabber = new $channel['grabber_class']();
             if (!empty($channel['filter_topics'])) {
                 $filterTopics = $this->arrayNotEmptyIntersect($filterTopics, $this->topicListToArray($channel['filter_topics']));
             }
@@ -120,7 +119,7 @@ class FeedDataProcessor implements DataProcessorInterface
         if (count($conditions) === 0) {
             return '';
         }
-        $where = '((' . join(') OR (', $conditions) . '))';
+        $where = '((' . implode(') OR (', $conditions) . '))';
         return $where;
     }
 
@@ -158,9 +157,10 @@ class FeedDataProcessor implements DataProcessorInterface
                     return ltrim($topic, '#');
                 },
                 GeneralUtility::trimExplode(',', $toplicList)
-            ), function ($topic) {
-            return !empty($topic);
-        }
+            ),
+            function ($topic) {
+                return !empty($topic);
+            }
         );
         return $topics;
     }

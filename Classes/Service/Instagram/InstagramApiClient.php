@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Service\Instagram;
 
 use Andreyco\Instagram\Client;
@@ -49,7 +50,7 @@ class InstagramApiClient extends Client implements SingletonInterface
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $data = json_decode(curl_exec($ch));
-        return (int) $data->user->id;
+        return (int)$data->user->id;
     }
 
     /**
@@ -69,5 +70,4 @@ class InstagramApiClient extends Client implements SingletonInterface
         }
         return $this->_makeCall('users/' . $userId . '/media/recent', $options);
     }
-
 }

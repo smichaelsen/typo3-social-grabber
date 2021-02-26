@@ -8,7 +8,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class AccessTokenService implements SingletonInterface
 {
-
     protected static $accessToken = null;
 
     /**
@@ -50,5 +49,4 @@ class AccessTokenService implements SingletonInterface
         }
         return $registry;
     }
-
 }

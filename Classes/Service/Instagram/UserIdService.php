@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Service\Instagram;
 
 use TYPO3\CMS\Core\Registry;
@@ -7,10 +8,10 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class UserIdService implements SingletonInterface
 {
-
     protected static $usernamesToIds = [];
 
-    public static function getIdForUsername($username) {
+    public static function getIdForUsername($username)
+    {
         if (!isset(self::$usernamesToIds[$username])) {
             self::$usernamesToIds[$username] = self::getRegistry()->get(__CLASS__, $username);
             if (empty(self::$usernamesToIds[$username])) {
@@ -41,5 +42,4 @@ class UserIdService implements SingletonInterface
         }
         return $registry;
     }
-
 }

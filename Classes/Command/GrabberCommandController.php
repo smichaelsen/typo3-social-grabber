@@ -10,10 +10,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class GrabberCommandController extends AbstractCommandController
 {
-
-    /**
-     *
-     */
     public function grabCommand()
     {
         $this->initialize();
@@ -28,7 +24,7 @@ class GrabberCommandController extends AbstractCommandController
                 throw new \Exception('Grabber class "' . $channel['grabber_class'] . '" could not be loaded.', 1456736073);
             }
             /** @var GrabberInterface $grabber */
-            $grabber = new $channel['grabber_class'];
+            $grabber = new $channel['grabber_class']();
             if (!$grabber instanceof GrabberInterface) {
                 throw new \Exception('Grabber class "' . $channel['grabber_class'] . '" doesn\'t implement the GrabberInterface.', 1456736051);
             }
@@ -46,7 +42,7 @@ class GrabberCommandController extends AbstractCommandController
             if (!empty($data['feed_etag']) || !empty($data['feed_last_modified'])) {
                 $channel['feed_etag'] = $data['feed_etag'];
                 $channel['feed_last_modified'] = $data['feed_last_modified'];
-                $this->getDatabaseConnection()->exec_UPDATEquery('tx_socialgrabber_channel', 'uid = ' . (int) $channel['uid'], $channel);
+                $this->getDatabaseConnection()->exec_UPDATEquery('tx_socialgrabber_channel', 'uid = ' . (int)$channel['uid'], $channel);
             }
 
             // insert posts

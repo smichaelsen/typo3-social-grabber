@@ -7,7 +7,6 @@ use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
 
 class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterface, UpdatablePostsGrabberInterface
 {
-
     use ExtensionsConfigurationSettable;
 
     /**
@@ -40,7 +39,7 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
      */
     protected function replaceHashtags($message)
     {
-        preg_match_all("/#[^ ]*/", $message, $result, PREG_PATTERN_ORDER);
+        preg_match_all('/#[^ ]*/', $message, $result, PREG_PATTERN_ORDER);
 
         foreach ($result[0] as $item) {
             if (strpos($item, '</a>') !== false || strpos($item, '"') !== false) {
@@ -124,7 +123,7 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
         }
 
         usort($tagReplacements, function ($a, $b) {
-            return ($b['start'] - $a['start']);
+            return $b['start'] - $a['start'];
         });
         foreach ($tagReplacements as $entityReplacement) {
             $message = self::mb_substr_replace($message, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - 1);
@@ -179,7 +178,7 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
         if (count($topicStatements) === 0) {
             return '';
         }
-        return ' AND (' . join(' OR ', $topicStatements) . ')';
+        return ' AND (' . implode(' OR ', $topicStatements) . ')';
     }
 
     /**

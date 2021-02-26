@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Grabber;
 
 interface UpdatablePostsGrabberInterface
@@ -9,5 +10,4 @@ interface UpdatablePostsGrabberInterface
      * @return array
      */
     public function updatePosts($posts);
-
 }

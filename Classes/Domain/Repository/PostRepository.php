@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Domain\Repository;
 
 use Smichaelsen\SocialGrabber\Domain\Model\Post;
@@ -9,14 +10,10 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
 
 class PostRepository extends Repository
 {
-
-    /**
-     *
-     */
     public function initializeObject()
     {
         $querySettings = $this->objectManager->get(Typo3QuerySettings::class);
-        $querySettings->setRespectStoragePage(FALSE);
+        $querySettings->setRespectStoragePage(false);
         $this->setDefaultQuerySettings($querySettings);
     }
 
@@ -28,5 +25,4 @@ class PostRepository extends Repository
         $query = $this->createQuery();
         return $query->setOrderings(['publicationDate' => Query::ORDER_DESCENDING])->setLimit(3)->execute();
     }
-
 }
