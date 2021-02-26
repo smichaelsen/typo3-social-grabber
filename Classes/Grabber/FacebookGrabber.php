@@ -4,17 +4,14 @@ namespace Smichaelsen\SocialGrabber\Grabber;
 
 use Facebook\Facebook;
 use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 
 class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterface, UpdatablePostsGrabberInterface
 {
 
     use ExtensionsConfigurationSettable;
 
-    /**
-     * @param array $channel
-     * @return array
-     */
-    public function grabData($channel)
+    public function grabData(array $channel): array
     {
         $data = [
             'posts' => []
@@ -166,11 +163,7 @@ class FacebookGrabber implements GrabberInterface, TopicFilterableGrabberInterfa
         return $updatedPosts;
     }
 
-    /**
-     * @param array $topics
-     * @return string
-     */
-    public function getTopicFilterWhereStatement($topics)
+    public function getTopicFilterWhereStatement(array $topics, QueryBuilder $query)
     {
         $topicStatements = [];
         foreach ($topics as $topic) {

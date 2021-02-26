@@ -1,0 +1,15 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Smichaelsen\SocialGrabber\Command\GrabberCommand:
+    tags:
+      - name: 'console.command'
+        command: 'socialgrabber:grab'
+
+  Smichaelsen\SocialGrabber\Command\UpdatePostsCommand:
+    tags:
+      - name: 'console.command'
+        command: 'socialgrabber:update'

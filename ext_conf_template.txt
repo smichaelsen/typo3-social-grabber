@@ -1,3 +1,5 @@
+######################
+### Social Grabber ###
 # customcategory=facebook=Facebook
 # customcategory=instagram=Instagram
 # customcategory=twitter=Twitter

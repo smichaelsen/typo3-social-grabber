@@ -9,10 +9,6 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
 
 class PostRepository extends Repository
 {
-
-    /**
-     *
-     */
     public function initializeObject()
     {
         $querySettings = $this->objectManager->get(Typo3QuerySettings::class);
@@ -28,5 +24,4 @@ class PostRepository extends Repository
         $query = $this->createQuery();
         return $query->setOrderings(['publicationDate' => Query::ORDER_DESCENDING])->setLimit(3)->execute();
     }
-
 }

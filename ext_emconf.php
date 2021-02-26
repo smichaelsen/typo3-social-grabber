@@ -1,6 +1,6 @@
 <?php
 
-$EM_CONF['social_grabber'] = [
+$EM_CONF[$_EXTKEY] = [
     'title' => 'Social Grabber',
     'description' => 'Grabs posts from different platforms',
     'category' => 'be',
@@ -8,10 +8,10 @@ $EM_CONF['social_grabber'] = [
     'author' => 'Sebastian Michaelsen',
     'author_email' => '',
     'author_company' => 'Maschinenraum UG',
-    'version' => '2.4.0',
+    'version' => '3.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '7.6.2-8.7.99',
+            'typo3' => '10.4.2-10.4.99',
         ],
     ],
 ];

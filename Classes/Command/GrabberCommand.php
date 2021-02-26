@@ -4,24 +4,29 @@ namespace Smichaelsen\SocialGrabber\Command;
 
 use Smichaelsen\SocialGrabber\Grabber\GrabberInterface;
 use Smichaelsen\SocialGrabber\Grabber\HttpCachableGrabberInterface;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class GrabberCommandController extends AbstractCommandController
+class GrabberCommand extends AbstractCommand
 {
-
-    /**
-     *
-     */
-    public function grabCommand()
+    protected function configure()
     {
-        $this->initialize();
+        $this->setDescription('Grab things from the social media streams');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $this->grab();
+        return 0;
+    }
+
+    public function grab()
+    {
         $channels = $this->loadChannels();
-        $error = $this->getDatabaseConnection()->sql_error();
-        if ($error) {
-            throw new \Exception('Couldn\'t load channels: ' . $error);
-        }
+
         $flushCache = false;
         foreach ($channels as $channel) {
             if (!class_exists($channel['grabber_class'])) {
@@ -46,7 +51,8 @@ class GrabberCommandController extends AbstractCommandController
             if (!empty($data['feed_etag']) || !empty($data['feed_last_modified'])) {
                 $channel['feed_etag'] = $data['feed_etag'];
                 $channel['feed_last_modified'] = $data['feed_last_modified'];
-                $this->getDatabaseConnection()->exec_UPDATEquery('tx_socialgrabber_channel', 'uid = ' . (int) $channel['uid'], $channel);
+                $this->getConnectionForTable('tx_socialgrabber_channel')
+                    ->update('tx_socialgrabber_channel', $channel, ['uid' => (int)$channel['uid']]);
             }
 
             // insert posts
@@ -57,11 +63,13 @@ class GrabberCommandController extends AbstractCommandController
                 $inserts[] = $post;
             }
             if (count($inserts)) {
-                $this->getDatabaseConnection()->exec_INSERTmultipleRows('tx_socialgrabber_domain_model_post', array_keys($inserts[0]), $inserts);
-                $error = $this->getDatabaseConnection()->sql_error();
-                if ($error) {
-                    throw new \Exception('Error while inserting new posts: ' . $error, 1467270735);
+                try {
+                    $this->getConnectionForTable('tx_socialgrabber_domain_model_post')
+                        ->bulkInsert('tx_socialgrabber_domain_model_post', $inserts, array_keys($inserts[0]));
+                } catch (\Exception $exception) {
+                    throw new \Exception('Error while inserting new posts: ' . $exception->getMessage(), 1467270735);
                 }
+
                 $flushCache = true;
             }
             if (count($inserts) > 0) {

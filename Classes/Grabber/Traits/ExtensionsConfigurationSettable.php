@@ -3,19 +3,10 @@ namespace Smichaelsen\SocialGrabber\Grabber\Traits;
 
 trait ExtensionsConfigurationSettable
 {
+    protected array $extensionConfiguration;
 
-    /**
-     * @var array
-     */
-    protected $extensionConfiguration;
-
-    /**
-     * @param array $extensionConfiguration
-     * @return void
-     */
-    public function setExtensionConfiguration($extensionConfiguration)
+    public function setExtensionConfiguration(array $extensionConfiguration): void
     {
         $this->extensionConfiguration = $extensionConfiguration;
     }
-
 }
