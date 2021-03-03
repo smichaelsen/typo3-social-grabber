@@ -1,3 +1,4 @@
 plugin.tx_socialgrabber.view {
   templateRootPath =
+  partialRootPath =
 }

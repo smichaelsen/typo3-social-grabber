@@ -2,10 +2,11 @@
 
 namespace Smichaelsen\SocialGrabber\DataProcessing;
 
-use Smichaelsen\SocialGrabber\Grabber\TopicFilterableGrabberInterface;
-use TYPO3\CMS\Core\Database\DatabaseConnection;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Service\FlexFormService;
+use TYPO3\CMS\Core\Service\FlexFormService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
@@ -44,84 +45,80 @@ class FeedDataProcessor implements DataProcessorInterface
 
     protected function loadPosts(array $channelIds, int $limit, array $filterTopics, bool $excludeSharedPosts): array
     {
-        $posts = [];
-        $channels = $this->getDatabaseConnection()->exec_SELECTgetRows(
-            'uid, grabber_class, filter_topics',
-            'tx_socialgrabber_channel',
-            sprintf(
-                'tx_socialgrabber_channel.uid IN (%s)',
-                join(',', $channelIds)
-            )
-        );
-        $conditions = [];
-        $conditions[] = sprintf(
-            'tx_socialgrabber_domain_model_post.channel IN (%s)',
-            join(',', $channelIds)
-        );
-        $filterStatement = $this->getFilterTopicsWhereStatement($filterTopics, $channels);
-        if (!empty($filterStatement)) {
-            $conditions[] = $filterStatement;
-        }
+        $andWhere = [];
+
+        $query = $this->getQueryBuilderForTable('tx_socialgrabber_domain_model_post');
+
+        $andWhere[] = $query->expr()->in('channel', $channelIds);
+        $andWhere[] = $query->expr()->eq('is_shared_post', '0');
+
         if ($excludeSharedPosts) {
-            $conditions[] = 'shared_post_identifier = \'\'';
+            $andWhere[] = $query->expr()->eq('shared_post_identifier', '');
         }
-        $conditions[] = 'is_shared_post = 0';
 
-        $where = join(' AND ', $conditions) . $this->getTypoScriptFrontendController()->sys_page->enableFields('tx_socialgrabber_domain_model_post');
+        // add FilterQuery
 
-        $res = $this->getDatabaseConnection()->exec_SELECTquery(
-            'tx_socialgrabber_domain_model_post.*, tx_socialgrabber_channel.grabber_class as type',
-            'tx_socialgrabber_domain_model_post JOIN tx_socialgrabber_channel ON (tx_socialgrabber_channel.uid = tx_socialgrabber_domain_model_post.channel)',
-            $where,
-            '',
-            'publication_date DESC',
-            $limit === 0 ? '' : $limit
-        );
-        while ($post = $this->getDatabaseConnection()->sql_fetch_assoc($res)) {
+        $results = $query
+            ->select('tx_socialgrabber_domain_model_post.*', 'c.grabber_class as type')
+            ->from('tx_socialgrabber_domain_model_post')
+            ->join(
+                'tx_socialgrabber_domain_model_post',
+                'tx_socialgrabber_channel',
+                'c',
+                'c.uid = tx_socialgrabber_domain_model_post.channel'
+            )
+            ->where(...$andWhere)
+            ->orderBy('publication_date', 'DESC')
+            ->setMaxResults($limit === 0 ? '' : $limit)
+            ->execute();
+
+
+        return array_map(function ($post) {
             if (!empty($post['reactions'])) {
                 $post['reactions'] = json_decode($post['reactions'], true);
             }
-            $posts[] = $post;
-        }
-        return $posts;
+
+            return $post;
+        }, $results->fetchAllAssociative());
     }
 
-
-    /**
-     * @param array $filterTopics
-     * @param array $channels
-     * @return string
-     */
-    protected function getFilterTopicsWhereStatement($filterTopics, $channels)
+    protected function getFilterTopicsWhereStatement(array $filterTopics, array $channels, $query): ?array
     {
         if (count($channels) === 0) {
-            return '';
+            return null;
         }
         $conditions = [];
+        $channels = [1, 2];
         foreach ($channels as $channel) {
-            if (!in_array(TopicFilterableGrabberInterface::class, class_implements($channel['grabber_class']))) {
-                continue;
-            }
-            /** @var TopicFilterableGrabberInterface $grabber */
-            $grabber = new $channel['grabber_class'];
-            if (!empty($channel['filter_topics'])) {
-                $filterTopics = $this->arrayNotEmptyIntersect($filterTopics, $this->topicListToArray($channel['filter_topics']));
-            }
-            if (count($filterTopics) === 0) {
-                continue;
-            }
-            $grabberCondition = sprintf(
-                'tx_socialgrabber_channel.grabber_class = "%s"%s',
-                str_replace('\\', '\\\\', $channel['grabber_class']),
-                $grabber->getTopicFilterWhereStatement($filterTopics)
-            );
-            $conditions[] = $grabberCondition;
+            //if (!in_array(TopicFilterableGrabberInterface::class, class_implements($channel['grabber_class']))) {
+            //    continue;
+            //}
+            ///** @var TopicFilterableGrabberInterface $grabber */
+            //$grabber = new $channel['grabber_class'];
+            //if (!empty($channel['filter_topics'])) {
+            //    $filterTopics = $this->arrayNotEmptyIntersect($filterTopics, $this->topicListToArray($channel['filter_topics']));
+            //}
+            //if (count($filterTopics) === 0) {
+            //    continue;
+            //}
+            //$grabberCondition = sprintf(
+            //    'c.grabber_class = "%s"%s',
+            //    str_replace('\\', '\\\\', $channel['grabber_class']),
+            //    $grabber->getTopicFilterWhereStatement($filterTopics, $query)
+            //);
+            //$conditions[] = $grabberCondition;
+            $conditions[] = $query->expr()->eq('Foo', $channel);
         }
+
         if (count($conditions) === 0) {
-            return '';
+            return null;
         }
-        $where = '((' . join(') OR (', $conditions) . '))';
-        return $where;
+
+        return $conditions;
+
+        //$query->orWhere($conditions);
+        //$where = '((' . join(') OR (', $conditions) . '))';
+        //return $query;
     }
 
     /**
@@ -143,13 +140,9 @@ class FeedDataProcessor implements DataProcessorInterface
         return array_intersect($array1, $array2);
     }
 
-    /**
-     * @param string $toplicList
-     * @return array
-     */
-    protected function topicListToArray($toplicList)
+    protected function topicListToArray(string $topicList): array
     {
-        if (empty($toplicList)) {
+        if (empty($topicList)) {
             return [];
         }
         $topics = array_filter(
@@ -157,7 +150,7 @@ class FeedDataProcessor implements DataProcessorInterface
                 function ($topic) {
                     return ltrim($topic, '#');
                 },
-                GeneralUtility::trimExplode(',', $toplicList)
+                GeneralUtility::trimExplode(',', $topicList)
             ), function ($topic) {
             return !empty($topic);
         }
@@ -177,18 +170,37 @@ class FeedDataProcessor implements DataProcessorInterface
     }
 
     /**
-     * @return DatabaseConnection
-     */
-    protected function getDatabaseConnection()
-    {
-        return $GLOBALS['TYPO3_DB'];
-    }
-
-    /**
      * @return TypoScriptFrontendController
      */
     protected function getTypoScriptFrontendController()
     {
         return $GLOBALS['TSFE'];
+    }
+
+    protected function getConnectionPool(): ConnectionPool
+    {
+        return GeneralUtility::makeInstance(ConnectionPool::class);
+    }
+
+    protected function getConnectionForTable(string $table): Connection
+    {
+        return $this->getConnectionPool()->getConnectionForTable($table);
+    }
+
+    protected function getQueryBuilderForTable(string $table): QueryBuilder
+    {
+        return $this->getConnectionPool()->getQueryBuilderForTable($table);
+    }
+
+    protected function loadChannels(array $channelIds): array
+    {
+        $query = $this->getQueryBuilderForTable('tx_socialgrabber_channel');
+
+        return $query
+            ->select('uid', 'grabber_class', 'filter_topics')
+            ->from('tx_socialgrabber_channel')
+            ->where($query->expr()->in('uid', $channelIds))
+            ->execute()
+            ->fetchAllAssociative();
     }
 }
