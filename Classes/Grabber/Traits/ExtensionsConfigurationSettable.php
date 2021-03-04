@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Grabber\Traits;
 
 trait ExtensionsConfigurationSettable
@@ -11,11 +12,9 @@ trait ExtensionsConfigurationSettable
 
     /**
      * @param array $extensionConfiguration
-     * @return void
      */
     public function setExtensionConfiguration($extensionConfiguration)
     {
         $this->extensionConfiguration = $extensionConfiguration;
     }
-
 }

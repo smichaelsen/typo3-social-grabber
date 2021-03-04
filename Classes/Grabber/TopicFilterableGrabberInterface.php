@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Grabber;
 
 interface TopicFilterableGrabberInterface
@@ -9,5 +10,4 @@ interface TopicFilterableGrabberInterface
      * @return string
      */
     public function getTopicFilterWhereStatement($topics);
-
 }

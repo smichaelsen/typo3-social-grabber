@@ -10,7 +10,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterface, TopicFilterableGrabberInterface
 {
-
     use ExtensionsConfigurationSettable;
 
     /**
@@ -119,6 +118,6 @@ class InstagramGrabber implements GrabberInterface, UpdatablePostsGrabberInterfa
         if (count($topicStatements) === 0) {
             return '';
         }
-        return ' AND (' . join(' OR ', $topicStatements) . ')';
+        return ' AND (' . implode(' OR ', $topicStatements) . ')';
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Grabber;
 
 use PicoFeed\Parser\Item;
@@ -12,7 +13,6 @@ use Smichaelsen\SocialGrabber\Grabber\Traits\ExtensionsConfigurationSettable;
  */
 class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
 {
-
     use ExtensionsConfigurationSettable;
 
     /**
@@ -54,7 +54,7 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
 
         $lastUpdate = empty($channel['last_post_date']) ? null : \DateTime::createFromFormat('U', $channel['last_post_date']);
 
-        foreach($feed->getItems() as $item) {
+        foreach ($feed->getItems() as $item) {
             /** @var Item $item */
             if ($lastUpdate instanceof \DateTimeInterface && $item->getDate() <= $lastUpdate) {
                 continue;
@@ -70,12 +70,10 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
         }
 
         return $data;
-
     }
 
     /**
      * @param string $etag
-     * @return void
      */
     public function setEtag($etag)
     {
@@ -84,7 +82,6 @@ class RssGrabber implements GrabberInterface, HttpCachableGrabberInterface
 
     /**
      * @param string $lastModified
-     * @return void
      */
     public function setLastModified($lastModified)
     {

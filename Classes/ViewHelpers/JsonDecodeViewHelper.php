@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\ViewHelpers;
 
 use TYPO3\CMS\Fluid\Core\Rendering\RenderingContextInterface;
@@ -34,5 +35,4 @@ class JsonDecodeViewHelper extends AbstractViewHelper implements CompilableInter
         $json = $renderChildrenClosure();
         return json_decode($json, true);
     }
-
 }

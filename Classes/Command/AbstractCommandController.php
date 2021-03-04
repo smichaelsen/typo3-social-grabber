@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Command;
 
 use TYPO3\CMS\Core\Database\DatabaseConnection;
@@ -15,9 +16,6 @@ abstract class AbstractCommandController extends CommandController
      */
     protected $extensionConfiguration;
 
-    /**
-     *
-     */
     protected function initialize()
     {
         $this->extensionConfiguration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['social_grabber']);
@@ -50,7 +48,7 @@ abstract class AbstractCommandController extends CommandController
         // 730 days: 0.3%
         // I.e. a post that is one year old has a 1/200 chance to get updated within one run of the updatePostsCommand.
         // see the graph for this function: https://www.desmos.com/calculator/n0ua1nioff
-        return (float) 1 / pow($daysSincePublication, $exponent);
+        return (float)1 / pow($daysSincePublication, $exponent);
     }
 
     /**
@@ -65,7 +63,7 @@ abstract class AbstractCommandController extends CommandController
     }
 
     /**
-     * @return array|NULL
+     * @return array|null
      */
     protected function loadChannels()
     {

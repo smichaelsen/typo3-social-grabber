@@ -1,13 +1,14 @@
 <?php
-namespace Smichaelsen\SocialGrabber;
 
+namespace Smichaelsen\SocialGrabber;
 
 use Smichaelsen\SocialGrabber\Service\Instagram\AccessTokenService;
 use Smichaelsen\SocialGrabber\Service\Instagram\InstagramApiClient;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 
-class ext_update {
+class ext_update
+{
 
     /**
      * @var array
@@ -35,5 +36,4 @@ class ext_update {
     {
         return true;
     }
-
 }

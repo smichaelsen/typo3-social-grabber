@@ -1,4 +1,5 @@
 <?php
+
 namespace Smichaelsen\SocialGrabber\Grabber;
 
 interface GrabberInterface
@@ -6,7 +7,6 @@ interface GrabberInterface
 
     /**
      * @param array $extensionConfiguration
-     * @return void
      */
     public function setExtensionConfiguration($extensionConfiguration);
 
@@ -15,5 +15,4 @@ interface GrabberInterface
      * @return array
      */
     public function grabData($channel);
-
 }

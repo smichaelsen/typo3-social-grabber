@@ -14,7 +14,7 @@ class TwitterEntityReplacerTest extends TestCase
     public function returnsOriginalTextIfThereAreNoEntitiesToReplace()
     {
         $tweet = 'LIMONADA 🗿';
-        $this->assertEquals($tweet, TwitterEntityReplacer::replaceEntities($tweet, new \stdClass()));
+        self::assertEquals($tweet, TwitterEntityReplacer::replaceEntities($tweet, new \stdClass()));
     }
 
     /**
@@ -24,7 +24,7 @@ class TwitterEntityReplacerTest extends TestCase
      */
     public function testTweets($tweet, $expected)
     {
-        $this->assertEquals($expected, TwitterEntityReplacer::replaceEntities($tweet->text, $tweet->entities));
+        self::assertEquals($expected, TwitterEntityReplacer::replaceEntities($tweet->text, $tweet->entities));
     }
 
     /**
@@ -43,5 +43,4 @@ class TwitterEntityReplacerTest extends TestCase
             ],
         ];
     }
-
 }

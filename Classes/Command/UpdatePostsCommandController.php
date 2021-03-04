@@ -10,12 +10,11 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class UpdatePostsCommandController extends AbstractCommandController
 {
-
     public function updatePostsCommand()
     {
         $this->initialize();
         $channels = $this->loadChannels();
-        $flushCache = false;;
+        $flushCache = false;
         foreach ($channels as $channel) {
             $updatedPosts = $this->updatePostsOfChannel($channel);
             if ($updatedPosts > 0) {
@@ -37,7 +36,7 @@ class UpdatePostsCommandController extends AbstractCommandController
     protected function updatePostsOfChannel(array $channel)
     {
         /** @var GrabberInterface|UpdatablePostsGrabberInterface $grabber */
-        $grabber = new $channel['grabber_class'];
+        $grabber = new $channel['grabber_class']();
         $grabber->setExtensionConfiguration($this->extensionConfiguration);
         if (!$grabber instanceof UpdatablePostsGrabberInterface) {
             return 0;

@@ -62,7 +62,7 @@ class TwitterEntityReplacer
         }
         // reverse replacements because they have to be executed from end to beginning
         usort($entityReplacements, function ($a, $b) {
-            return ($b['start'] - $a['start']);
+            return $b['start'] - $a['start'];
         });
         foreach ($entityReplacements as $entityReplacement) {
             $text = self::mb_substr_replace($text, $entityReplacement['replacement'], $entityReplacement['start'], $entityReplacement['end'] - 1);
