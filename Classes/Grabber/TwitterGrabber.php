@@ -112,6 +112,15 @@ class TwitterGrabber implements GrabberInterface, TopicFilterableGrabberInterfac
                 $this->extensionConfiguration['oauth_access_token'],
                 $this->extensionConfiguration['oauth_access_token_secret'],
             );
+
+            if (isset($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy']) && $GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy'] !== '') {
+                $urlParts = parse_url($GLOBALS['TYPO3_CONF_VARS']['HTTP']['proxy']);
+                $twitter->setProxy([
+                    'CURLOPT_PROXY' => $urlParts['scheme'] . '://' . $urlParts['host'],
+                    'CURLOPT_PROXYUSERPWD' => '',
+                    'CURLOPT_PROXYPORT' => $urlParts['port'],
+                ]);
+            }
         }
         return $twitter;
     }
