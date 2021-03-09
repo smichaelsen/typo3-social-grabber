@@ -22,5 +22,10 @@
 		"phpunit/phpunit": "^9.5",
 		"mikey179/vfsstream": "^1.6",
 		"ssch/typo3-rector": "^0.9.6"
-	}
+	},
+	"extra": {
+            "typo3/cms": {
+                "extension-key": "social_grabber"
+            }
+        }
 }
