@@ -5,7 +5,8 @@
 		"abraham/twitteroauth": "^2.0",
 		"andreyco/instagram": "^4.1.1",
 		"facebook/graph-sdk": "^5.6.1",
-		"iamcal/lib_autolink": "v1.7"
+		"iamcal/lib_autolink": "v1.7",
+		"typo3/cms-core": "^10.4 || ^11"
 	},
 	"autoload": {
 		"psr-4": {
